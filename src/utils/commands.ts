@@ -7,9 +7,9 @@ export const COMMANDS: { [commandName: string]: any } = {
     description: 'Test slash command',
     type: 1,
   },
-  availability: {
-    name: 'availability',
-    description: 'Request availabilities',
-    type: 1,
-  }
+  // availability: {
+  //   name: 'availability',
+  //   description: 'Request availabilities',
+  //   type: 1,
+  // }
 }

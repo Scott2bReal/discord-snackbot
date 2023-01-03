@@ -25,7 +25,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
     }
 
     // Install any commands which aren't already registered
-    // await deleteCommand('test')
     await installCommands()
 
     // Slash command listeners
@@ -45,7 +44,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
       if (message.data.name.toLowerCase() === 'availability') {
         return res.status(200).send({
-          type: 9,
+          type: InteractionResponseType.APPLICATION_MODAL,
           data: {
             content: 'Tested!',
           }
