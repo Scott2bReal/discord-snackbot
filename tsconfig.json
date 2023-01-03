@@ -8,8 +8,7 @@
     "sourceMap": true,
     "esModuleInterop": true,
     "noImplicitAny": true,
-    "noImplicitThis": true,
-    "noUnusedLocals": true
+    "noImplicitThis": true
   },
   "include": ["src"],
   "exclude": ["src/__tests__"]
