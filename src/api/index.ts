@@ -3,11 +3,6 @@ import { VercelRequest, VercelResponse } from '@vercel/node'
 import { deleteCommand, installCommands, isValidReq } from '../utils/discord'
 import { logJSON } from '../utils/loggers'
 
-export const config = {
-  runtime: 'edge', // this is a pre-requisite
-  regions: ['cle1'], // only execute this function on iad1
-};
-
 export default async function (req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     // Discord wants to verify requests
