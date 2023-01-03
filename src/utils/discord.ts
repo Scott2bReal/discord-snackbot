@@ -35,11 +35,13 @@ export async function installCommands() {
 
   // Filter list of COMMANDS to only those which are not installed
   const uninstalled = findUninstalledCommands(installed)
+  console.log(`Uninstalled: `, uninstalled)
 
   // If no commands are not installed, return
   if (!uninstalled || uninstalled.length === 0) return
 
   // For each uninstalled command, install that command
+  // installGuildCommand('availability')
   return await Promise.allSettled(
     uninstalled.map(async (commandName) => {
       installGuildCommand(commandName)
@@ -47,14 +49,29 @@ export async function installCommands() {
   )
 }
 
+export async function deleteCommand(commandName: string) {
+  const appId = process.env.DISCORD_BOT_ID
+  const guildId = process.env.SNACKS_GUILD_ID
+
+  const commands = await getInstalledCommands()
+  if (!commands) return
+  console.log(commands)
+
+  const command = commands.filter(c => c.name === commandName)[0]
+  const endpoint = `applications/${appId}/guilds/${guildId}/commands/${command.id}`
+  console.log(command.id)
+  return await discordAPI(endpoint, 'DELETE')
+}
+
 function findUninstalledCommands(installed: Array<ApplicationCommand>) {
   // Compare list of installed commands to our registered commands (defined in
   // ./commands.js). Return list of uninstalled command names
   const myCommands = Object.keys(COMMANDS)
+  console.log(`My commands: `, myCommands)
   const installedNames = installed.map((command) => command.name)
 
   return myCommands.filter((commandName) => {
-    return installedNames.includes(commandName)
+    return !installedNames.includes(commandName)
   })
 }
 
@@ -103,6 +120,7 @@ export async function installGuildCommand(commandName: string) {
     console.log(`Installing `, commandName)
     const result = await discordAPI(endpoint, 'POST', command)
     logJSON(result, `Tried to install ${commandName}`)
+    return result
   } catch (e) {
     console.error(e)
   }

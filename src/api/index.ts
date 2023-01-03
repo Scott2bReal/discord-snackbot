@@ -1,8 +1,9 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 // import { verifyKey } from "discord-interactions";
-import { logJSON } from '../utils/loggers'
+// import { logJSON } from '../utils/loggers'
 import { InteractionResponseType, InteractionType } from 'discord-interactions'
-import { installCommands, isValidReq } from '../utils/discord'
+import { deleteCommand, installCommands, isValidReq } from '../utils/discord'
+import { logJSON } from '../utils/loggers'
 
 export default async function (req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
@@ -14,7 +15,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
     }
 
     const message = req.body
-    console.log(`message type: `, message.type)
 
     // Handle verfication "PING" request from Discord
     if (message.type === InteractionType.PING) {
@@ -25,11 +25,14 @@ export default async function (req: VercelRequest, res: VercelResponse) {
     }
 
     // Install any commands which aren't already registered
+    // await deleteCommand('test')
     await installCommands()
 
     // Slash command listeners
     if (message.type === InteractionType.APPLICATION_COMMAND) {
       logJSON(message, `Received slash command`)
+
+      // Test command
       if (message.data.name.toLowerCase() === 'TEST'.toLowerCase()) {
         return res.status(200).send({
           type: 4,
@@ -37,6 +40,15 @@ export default async function (req: VercelRequest, res: VercelResponse) {
             content: 'Tested!',
             flags: 64,
           },
+        })
+      }
+
+      if (message.data.name.toLowerCase() === 'availability') {
+        return res.status(200).send({
+          type: 9,
+          data: {
+            content: 'Tested!',
+          }
         })
       }
     }
