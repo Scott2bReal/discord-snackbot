@@ -75,7 +75,6 @@ function findUninstalledCommands(installed: Array<ApplicationCommand>) {
   })
 }
 
-
 export function isValidReq(req: VercelRequest) {
   const signature = req.headers['x-signature-ed25519'] ?? ''
   const timestamp = req.headers['x-signature-timestamp'] ?? ''
