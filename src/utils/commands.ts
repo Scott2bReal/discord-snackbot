@@ -31,3 +31,5 @@ export const COMMANDS: { [commandName: string]: any } = {
     type: 1,
   }
 }
+
+export const INSTALL_ID = '1060197765365387334'

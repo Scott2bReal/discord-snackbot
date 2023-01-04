@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import {
+  deleteCommand,
   getInstalledCommands,
   // discordAPI,
   // deleteCommand,
@@ -7,8 +8,14 @@ import {
   installCommands,
   isValidReq,
 } from '../utils/discord'
-import { addShowModal, availModal, deleteCommandsMenu, removeShowMenu } from '../utils/interactives'
 import {
+  addShowModal,
+  availModal,
+  deleteCommandsMenu,
+  removeShowMenu,
+} from '../utils/interactives'
+import {
+  basicEphMessage,
   getShowData,
   isValidDate,
   isValidLocation,
@@ -109,7 +116,6 @@ export default async function(req: VercelRequest, res: VercelResponse) {
 
     // Delete command
     if (message.data.name === 'delete') {
-      console.log(`Received delete command`)
       // Get list of installed commands
       const commands = await getInstalledCommands()
       console.log(`Installed commands: `, commands)
@@ -121,7 +127,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
           data: {
             ...deleteCommandsMenu(commands),
             flags: 64,
-          }
+          },
         })
       }
 
@@ -131,7 +137,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
         data: {
           content: `There are no commands to delete!`,
           flags: 64,
-        }
+        },
       })
     }
 
@@ -165,6 +171,38 @@ export default async function(req: VercelRequest, res: VercelResponse) {
             flags: 64,
           },
         })
+      }
+
+      // Delete Commands Menu Submission
+      if (message.message.interaction.name === 'delete') {
+        // Get IDs of commands user wants to delete
+        logJSON(message, `Received delete command submission`)
+        const ids = message.data.values as string[]
+        const commandsToDelete = ids.length
+        if (commandsToDelete === 0) return res.status(200).send('')
+
+        // For each of those commands, delete
+        try {
+          await Promise.allSettled(
+            ids.map(async (id) => {
+              return await deleteCommand(id)
+            })
+          )
+
+          return res.status(200).send({
+            ...basicEphMessage(
+              `I deleted those ${commandsToDelete} command${commandsToDelete === 1 ? '' : 's'
+              }. If you'd like to reinstall, you can run /install`
+            ),
+          })
+        } catch (e) {
+          console.error(e)
+          return res.status(200).send({
+            ...basicEphMessage(
+              `I've removed those commands. If you'd like to reinstall them, please run /install`
+            ),
+          })
+        }
       }
     }
 

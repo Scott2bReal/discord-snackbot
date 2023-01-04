@@ -7,7 +7,7 @@ export function logJSON(json: object, message?: string) {
 }
 
 export function isValidDate(date: string) {
-  if (date.length === 0) return true;
+  if (date.length === 0) return true
   const dateFormat = /^\d{4}-\d{2}-\d{2}$/
   return dateFormat.test(date)
 }
@@ -31,4 +31,14 @@ export function getShowData(message: any) {
   showData.ticketLink = message.data.components[4].components[0].value ?? ''
 
   return showData
+}
+
+export const basicEphMessage = (content: string) => {
+  return {
+    type: 4,
+    data: {
+      flags: 64,
+      content: content,
+    },
+  }
 }

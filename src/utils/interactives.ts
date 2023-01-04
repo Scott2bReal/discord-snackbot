@@ -1,4 +1,5 @@
 import { Show } from '../types'
+import { INSTALL_ID } from './commands'
 
 export const availModal = {
   custom_id: 'availRequest',
@@ -106,8 +107,8 @@ export const removeShowMenu = (shows: Show[]) => {
           {
             type: 3,
             custom_id: 'removeShow',
-            options: shows.map(show => {
-            const showDate = show.date ? ` - ${show.date}` : ''
+            options: shows.map((show) => {
+              const showDate = show.date ? ` - ${show.date}` : ''
               return {
                 label: show.venueName,
                 value: show._id,
@@ -133,17 +134,19 @@ export const deleteCommandsMenu = (commands: Array<any>) => {
           {
             type: 3,
             custom_id: 'deleteCommandsMenu',
-            options: commands.map(command => {
-              return {
-                label: command.name,
-                value: command.id,
-                description: command.description
-              }
-            }),
+            options: commands
+              .filter((command) => command.id !== INSTALL_ID)
+              .map((command) => {
+                return {
+                  label: command.name,
+                  value: command.id,
+                  description: command.description,
+                }
+              }),
             max_values: 3,
-          }
-        ]
-      }
-    ]
+          },
+        ],
+      },
+    ],
   }
 }
