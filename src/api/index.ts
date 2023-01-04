@@ -73,7 +73,33 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       }
 
       // Display list of events in DB
-      if (commandName === '') {
+      if (commandName === 'listevents') {
+        const prisma = new PrismaClient()
+
+        const db = async () => {
+          return await prisma.event.findMany({
+            include: {
+              requester: true,
+              responses: true,
+            },
+          })
+        }
+
+        try {
+          const events = await db()
+          const eventList = events.map(e => e.name).join(', ')
+          console.log(eventList)
+          prisma.$disconnect()
+          return res.status(200).send({
+            ...basicEphMessage(eventList)
+          })
+        } catch (e) {
+          console.error(e)
+          prisma.$disconnect()
+          return res.status(200).send({
+            ...basicEphMessage(`Something went wrong getting that list of events`)
+          })
+        }
       }
 
       // Open add show modal

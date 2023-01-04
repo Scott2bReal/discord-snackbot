@@ -3,6 +3,7 @@
   "compilerOptions": {
     "target": "es6",
     "module": "esnext",
+    "skipLibCheck": true,
     "declaration": true,
     "strict": true,
     "outDir": "dist",
@@ -11,7 +12,8 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "esModuleInterop": true,
-    "moduleResolution": "Node"
+    "moduleResolution": "node",
+    "allowJs": true,
   },
   "include": ["src", "**/*.ts"],
   "exclude": ["src/__tests__", "node_modules"]
