@@ -9,5 +9,10 @@ export const COMMANDS: { [commandName: string]: any } = {
     name: 'availability',
     description: 'Request availabilities',
     type: 1,
-  }
+  },
+  addshow: {
+    name: 'addshow',
+    description: 'Add a show to the website',
+    type: 1,
+  },
 }

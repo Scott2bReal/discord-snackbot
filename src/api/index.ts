@@ -1,15 +1,19 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
-// import { logJSON } from '../utils/loggers'
-import { deleteCommand, installCommands, isValidReq } from '../utils/discord'
-import { availModal } from '../utils/modals'
-import { isValidDate } from '../utils/helpers'
+import {
+  // deleteCommand,
+  // discordAPI,
+  // installCommands,
+  isValidReq,
+} from '../utils/discord'
+import { addShowModal, availModal } from '../utils/modals'
+import { getShowData, isValidDate, isValidLocation } from '../utils/helpers'
+import { sanityAPI } from '../utils/sanity'
 
 export default async function (req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     // Discord wants to verify requests
     const validReq = isValidReq(req)
     if (!validReq) {
-      console.error('Invalid req\n')
       return res.status(401).send({ error: 'Bad req signature ' })
     }
 
@@ -17,7 +21,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
     // Handle verfication "PING" request from Discord
     if (message.type === 1) {
-      console.log(`Valid request!\n`)
       return res.status(200).send({
         type: 1,
       })
@@ -39,6 +42,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         })
       }
 
+      // Open availability modal
       if (message.data.name.toLowerCase() === 'availability') {
         return res.status(200).send({
           type: 9,
@@ -47,11 +51,19 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           },
         })
       }
+
+      if (message.data.name.toLowerCase() === 'addshow') {
+        return res.status(200).send({
+          type: 9,
+          data: {
+            ...addShowModal,
+          },
+        })
+      }
     }
 
     // Modal Submissions
     if (message.type === 5) {
-
       // Availability Request Modal Submission
       if (message.data.custom_id === 'availRequest') {
         const submitted = message.data.components[1].components[0].value
@@ -78,6 +90,59 @@ export default async function (req: VercelRequest, res: VercelResponse) {
             flags: 64,
           },
         })
+      }
+
+      // Add Show Modal Submission
+      if (message.data.custom_id === 'addShow') {
+        const dateString = message.data.components[2].components[0].value
+        const location = message.data.components[3].components[0].value
+
+        // Check date and ask for new one if no good
+        if (!(typeof dateString === 'string') || !isValidDate(dateString)) {
+          return res.status(200).send({
+            type: 4,
+            data: {
+              content: `Sorry, I couldn't understand the date you asked me about. Please ask me to check dates in exactly this format: "YYYY-MM-DD". The date you submitted was: ${dateString}`,
+              flags: 64,
+            },
+          })
+        } else if (typeof location !== 'string' || !isValidLocation(location)) {
+          return res.status(200).send({
+            type: 4,
+            data: {
+              content: `Sorry, I don't know where ${location} is. I can only understand locations if they contain a city name and a state code (e.g. Chicago, IL)`,
+              flags: 64,
+            },
+          })
+        }
+
+        const showData = getShowData(message)
+
+        try {
+          await sanityAPI('shows', {
+            mutationType: 'create',
+            data: {
+              ...showData,
+            },
+          })
+
+          return res.status(200).send({
+            type: 4,
+            data: {
+              content: `Thanks! I just added that show to the website. Check it out at https://nastysnacks.netlify.app/#shows`,
+              flags: 64,
+            },
+          })
+        } catch (e) {
+          console.error(e)
+          return res.status(200).send({
+            type: 4,
+            data: {
+              content: `Something went wrong adding that show to the website! You can try again, or visit https://nastysnacks.sanity.studio to add a show.`,
+              flags: 64,
+            },
+          })
+        }
       }
     }
   }

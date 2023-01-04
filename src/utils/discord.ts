@@ -1,8 +1,8 @@
 import { VercelRequest } from '@vercel/node'
 import nacl from 'tweetnacl'
-import { ApplicationCommand } from '../types'
+import { ApplicationCommand, GuildMember } from '../types'
 import { COMMANDS } from './commands'
-import { logJSON } from './loggers'
+import { logJSON } from './helpers'
 
 export async function discordAPI(
   endpoint: string,
@@ -57,7 +57,7 @@ export async function deleteCommand(commandName: string) {
   if (!commands) return
   console.log(commands)
 
-  const command = commands.filter(c => c.name === commandName)[0]
+  const command = commands.filter((c) => c.name === commandName)[0]
   const endpoint = `applications/${appId}/guilds/${guildId}/commands/${command.id}`
   console.log(command.id)
   return await discordAPI(endpoint, 'DELETE')
@@ -123,4 +123,11 @@ export async function installGuildCommand(commandName: string) {
   } catch (e) {
     console.error(e)
   }
+}
+
+export async function getAllGuildMembers() {
+  return (await discordAPI(
+    `/guilds/${process.env.SNACKS_GUILD_ID}/members?limit=10`,
+    'GET'
+  )) as GuildMember[]
 }

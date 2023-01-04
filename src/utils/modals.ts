@@ -27,3 +27,68 @@ export const availModal = {
     },
   ],
 }
+
+export const addShowModal = {
+  custom_id: 'addShow',
+  title: 'Add Show',
+  components: [
+    {
+      type: 1,
+      components: [
+        {
+          type: 4,
+          custom_id: 'venueName',
+          label: 'Venue Name',
+          style: 1,
+        }
+      ]
+    },
+    {
+      type: 1,
+      components: [
+        {
+          type: 4,
+          custom_id: 'subtitle',
+          label: 'Subtitle',
+          style: 1,
+          required: false,
+        }
+      ]
+    },
+    {
+      type: 1,
+      components: [
+        {
+          type: 4,
+          custom_id: 'date',
+          label: 'Date (please enter in format YYYY-MM-DD)',
+          style: 1,
+          required: false,
+        }
+      ]
+    },
+    {
+      type: 1,
+      components: [
+        {
+          type: 4,
+          custom_id: 'location',
+          label: 'Location (enter like "Chicago, IL)',
+          style: 1,
+        }
+      ]
+    },
+    {
+      type: 1,
+      components: [
+        {
+          type: 4,
+          custom_id: 'ticketLink',
+          label: 'Ticket Link',
+          style: 1,
+          required: false,
+        }
+      ]
+    },
+  ]
+}
