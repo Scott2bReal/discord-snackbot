@@ -55,11 +55,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
       // Test command
       if (message.data.name === 'test') {
         return res.status(200).send({
-          type: 4,
-          data: {
-            content: 'Tested!',
-            flags: 64,
-          },
+          ...basicEphMessage(`Tested!`),
         })
       }
 
@@ -105,11 +101,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
       if (message.data.name === 'install') {
         await installCommands()
         return res.status(200).send({
-          type: 4,
-          data: {
-            content: `I've installed any new commands!`,
-            flags: 64,
-          },
+          ...basicEphMessage(`I've installed any new commands!`),
         })
       }
     }
@@ -133,11 +125,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
 
       // If we're here then there are no commands
       return res.status(200).send({
-        type: 4,
-        data: {
-          content: `There are no commands to delete!`,
-          flags: 64,
-        },
+        ...basicEphMessage(`There are no commands to delete!`),
       })
     }
 
@@ -165,11 +153,9 @@ export default async function(req: VercelRequest, res: VercelResponse) {
 
         // Confirm deletion
         return res.status(200).send({
-          type: 4,
-          data: {
-            content: `I removed ${showsDeleted} for you! If you need to undo this, you can still find and restore deleted shows at https://nastysnacks.sanity.studio`,
-            flags: 64,
-          },
+          ...basicEphMessage(
+            `I removed ${showsDeleted} for you! If you need to undo this, you can still find and restore deleted shows at https://nastysnacks.sanity.studio`
+          ),
         })
       }
 
@@ -215,11 +201,9 @@ export default async function(req: VercelRequest, res: VercelResponse) {
         // We need the dates in a specific format to make sure we can convert them to actual dates
         if (!(typeof submitted === 'string') || !isValidDate(submitted)) {
           return res.status(200).send({
-            type: 4,
-            data: {
-              content: `Sorry, I couldn't understand the date you asked me about. Please ask me to check dates in exactly this format: "YYYY-MM-DD". The date you submitted was: ${submitted}`,
-              flags: 64,
-            },
+            ...basicEphMessage(
+              `Sorry, I couldn't understand the date you asked me about. Please ask me to check dates in exactly this format: "YYYY-MM-DD". The date you submitted was: ${submitted}`
+            ),
           })
         }
 
@@ -228,11 +212,9 @@ export default async function(req: VercelRequest, res: VercelResponse) {
         const eventName = message.data.components[0].components[0].value
 
         return res.status(200).send({
-          type: 4,
-          data: {
-            content: `Thanks! I'll check in with everyone about ${eventName} on ${eventDate.toDateString()} and report back when I know their availabilities`,
-            flags: 64,
-          },
+          ...basicEphMessage(
+            `Thanks! I'll check in with everyone about ${eventName} on ${eventDate.toDateString()} and report back when I know their availabilities`
+          ),
         })
       }
 
@@ -244,19 +226,15 @@ export default async function(req: VercelRequest, res: VercelResponse) {
         // Check date and ask for new one if no good
         if (!(typeof dateString === 'string') || !isValidDate(dateString)) {
           return res.status(200).send({
-            type: 4,
-            data: {
-              content: `Sorry, I couldn't understand the date you asked me about. Please ask me to check dates in exactly this format: "YYYY-MM-DD". The date you submitted was: ${dateString}`,
-              flags: 64,
-            },
+            ...basicEphMessage(
+              `Sorry, I couldn't understand the date you asked me about. Please ask me to check dates in exactly this format: "YYYY-MM-DD". The date you submitted was: ${dateString}`
+            ),
           })
         } else if (typeof location !== 'string' || !isValidLocation(location)) {
           return res.status(200).send({
-            type: 4,
-            data: {
-              content: `Sorry, I don't know where ${location} is. I can only understand locations if they contain a city name and a state code (e.g. Chicago, IL)`,
-              flags: 64,
-            },
+            ...basicEphMessage(
+              `Sorry, I don't know where ${location} is. I can only understand locations if they contain a city name and a state code (e.g. Chicago, IL)`
+            ),
           })
         }
 
@@ -271,20 +249,16 @@ export default async function(req: VercelRequest, res: VercelResponse) {
           })
 
           return res.status(200).send({
-            type: 4,
-            data: {
-              content: `Thanks! I just added that show to the website. Check it out at https://nastysnacks.netlify.app/#shows`,
-              flags: 64,
-            },
+            ...basicEphMessage(
+              `Thanks! I just added that show to the website. Check it out at https://nastysnacks.netlify.app/#shows`
+            ),
           })
         } catch (e) {
           console.error(e)
           return res.status(200).send({
-            type: 4,
-            data: {
-              content: `Something went wrong adding that show to the website! You can try again, or visit https://nastysnacks.sanity.studio to add a show.`,
-              flags: 64,
-            },
+            ...basicEphMessage(
+              `Something went wrong adding that show to the website! You can try again, or visit https://nastysnacks.sanity.studio to add a show.`
+            ),
           })
         }
       }
