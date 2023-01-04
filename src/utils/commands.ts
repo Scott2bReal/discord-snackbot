@@ -15,4 +15,14 @@ export const COMMANDS: { [commandName: string]: any } = {
     description: 'Add a show to the website',
     type: 1,
   },
+  removeshow: {
+    name: 'removeshow',
+    description: 'Remove a show from the website',
+    type: 1,
+  },
+  install: {
+    name: 'install',
+    description: 'Install any new commands',
+    type: 1,
+  },
 }
