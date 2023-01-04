@@ -1,12 +1,18 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import {
+  discordAPI,
   // deleteCommand,
   // discordAPI,
   installCommands,
   isValidReq,
 } from '../utils/discord'
 import { addShowModal, availModal, removeShowMenu } from '../utils/modals'
-import { getShowData, isValidDate, isValidLocation, logJSON } from '../utils/helpers'
+import {
+  getShowData,
+  isValidDate,
+  isValidLocation,
+  logJSON,
+} from '../utils/helpers'
 import { sanityAPI } from '../utils/sanity'
 import { Show } from '../types'
 
@@ -27,6 +33,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
     }
 
     logJSON(message, `Received request`)
+    console.log(`Message type: `, message.type)
 
     // Slash command listeners
     // These are simple, just need to respond to a slash command request from
@@ -66,6 +73,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       // Remove show select menu
       if (message.data.name === 'removeshow') {
         // Get list of shows from Sanity
+        console.log(`Fetching shows from sanity...`)
         const result = await sanityAPI('shows')
 
         const shows = result.result as Show[]
@@ -88,7 +96,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           data: {
             content: `I've installed any new commands!`,
             flags: 64,
-          }
+          },
         })
       }
     }
@@ -96,13 +104,31 @@ export default async function (req: VercelRequest, res: VercelResponse) {
     // Select Menu Submissions
     if (message.type === 3) {
       // Remove Show Menu Submission
-      if (message.data.custom_id === 'removeShow') {
+      if (message.message.interaction.name === 'removeshow') {
+        // Get ID of user-selected show to delete
+        const showsToRemove = message.data.values
+
+        logJSON(showsToRemove, `Shows to delete`)
+        // Delete in Sanity using ID
+
+        const result = await Promise.allSettled(
+          showsToRemove.map(async (showID: string) => {
+            await sanityAPI('shows', {
+              mutationType: 'delete',
+              data: { id: showID },
+            })
+          })
+        )
+
+        const showsDeleted = `${result.length === 1 ? 'one show' : `${result.length} shows`}`
+
+        // Confirm deletion
         return res.status(200).send({
           type: 4,
           data: {
-            content: `I've received your submission but haven't figured out how to delete shows yet`,
+            content: `I removed ${showsDeleted} for you! If you need to undo, you can still find deleted shows at https://nastysnacks.sanity.studio`,
             flags: 64,
-          }
+          },
         })
       }
     }

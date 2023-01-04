@@ -7,6 +7,7 @@ export function logJSON(json: object, message?: string) {
 }
 
 export function isValidDate(date: string) {
+  if (date.length === 0) return true;
   const dateFormat = /^\d{4}-\d{2}-\d{2}$/
   return dateFormat.test(date)
 }

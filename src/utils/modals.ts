@@ -97,7 +97,7 @@ export const addShowModal = {
 
 export const removeShowMenu = (shows: Show[]) => {
   return {
-    content: 'Pick a show to remove',
+    content: 'Pick up to 3 shows to remove',
     custom_id: 'removeShow',
     components: [
       {
@@ -115,6 +115,7 @@ export const removeShowMenu = (shows: Show[]) => {
               }
             }),
             placeholder: 'Pick a show to delete',
+            max_values: 3,
           },
         ],
       },
