@@ -1,0 +1,38 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  discordId String     @unique
+  events    Event[]
+  responses Response[]
+}
+
+model Event {
+  id          String     @id @default(cuid())
+  name        String
+  requester   User       @relation(fields: [requesterId], references: [id])
+  requesterId String
+  responses   Response[]
+  createdAt   DateTime   @default(now())
+}
+
+model Response {
+  id        String   @id @default(cuid())
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  available Boolean
+  createdAt DateTime @default(now())
+  @@unique([eventId, userId])
+}
