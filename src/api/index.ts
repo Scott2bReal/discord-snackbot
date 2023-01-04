@@ -2,18 +2,17 @@ import { VercelRequest, VercelResponse } from '@vercel/node'
 import {
   // deleteCommand,
   // discordAPI,
-  // installCommands,
+  installCommands,
   isValidReq,
 } from '../utils/discord'
-import { addShowModal, availModal } from '../utils/modals'
-import { getShowData, isValidDate, isValidLocation } from '../utils/helpers'
+import { addShowModal, availModal, removeShowMenu } from '../utils/modals'
+import { getShowData, isValidDate, isValidLocation, logJSON } from '../utils/helpers'
 import { sanityAPI } from '../utils/sanity'
 
 export default async function (req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     // Discord wants to verify requests
-    const validReq = isValidReq(req)
-    if (!validReq) {
+    if (!isValidReq(req)) {
       return res.status(401).send({ error: 'Bad req signature ' })
     }
 
@@ -26,13 +25,14 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       })
     }
 
-    // Install any commands which aren't already registered
-    // await installCommands()
+    logJSON(message, `Received request`)
 
     // Slash command listeners
+    // These are simple, just need to respond to a slash command request from
+    // Discord with a 200 code and whatever content we want the bot to display
     if (message.type === 2) {
       // Test command
-      if (message.data.name.toLowerCase() === 'TEST'.toLowerCase()) {
+      if (message.data.name === 'test') {
         return res.status(200).send({
           type: 4,
           data: {
@@ -43,7 +43,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       }
 
       // Open availability modal
-      if (message.data.name.toLowerCase() === 'availability') {
+      if (message.data.name === 'availability') {
         return res.status(200).send({
           type: 9,
           data: {
@@ -52,12 +52,35 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         })
       }
 
-      if (message.data.name.toLowerCase() === 'addshow') {
+      // Open add show modal
+      if (message.data.name === 'addshow') {
         return res.status(200).send({
           type: 9,
           data: {
             ...addShowModal,
           },
+        })
+      }
+
+      // Remove show select menu
+      if (message.data.name === 'removeshow') {
+        return res.status(200).send({
+          type: 3,
+          data: {
+            ...removeShowMenu,
+          },
+        })
+      }
+
+      // Install commands
+      if (message.data.name === 'install') {
+        await installCommands()
+        return res.status(200).send({
+          type: 4,
+          data: {
+            content: `I've installed any new commands!`,
+            flags: 64,
+          }
         })
       }
     }
