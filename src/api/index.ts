@@ -23,7 +23,6 @@ import {
 } from '../utils/helpers'
 import { sanityAPI } from '../utils/sanity'
 import { Show } from '../types'
-import { PrismaClient } from '@prisma/client'
 
 export default async function (req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
@@ -73,29 +72,28 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       }
 
       // Display list of events in DB
-      if (commandName === 'listevents') {
-        const prisma = new PrismaClient()
-
-        try {
-          const events = await prisma.event.findMany({
-            include: {
-              requester: true,
-              responses: true,
-            },
-          })
-
-          const eventList = events.map((e) => e.name).join(', ')
-
-          return res.status(200).send({
-            ...basicEphMessage(eventList),
-          })
-        } catch (e) {
-          console.error(e)
-          return res.status(200).send({
-            ...basicEphMessage(`Something went wrong fetching those events`),
-          })
-        }
-      }
+      // if (commandName === 'listevents') {
+      //   try {
+      //     console.log(`Fetching list of events...`)
+      //     const events = await prisma.event.findMany({
+      //       include: {
+      //         requester: true,
+      //         responses: true,
+      //       },
+      //     })
+      //
+      //     const eventList = events.map((e) => e.name).join(', ')
+      //
+      //     return res.status(200).send({
+      //       ...basicEphMessage(eventList),
+      //     })
+      //   } catch (e) {
+      //     console.error(e)
+      //     return res.status(200).send({
+      //       ...basicEphMessage(`Something went wrong fetching those events`),
+      //     })
+      //   }
+      // }
 
       // Open add show modal
       if (commandName === 'addshow') {
@@ -243,31 +241,26 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         const requester = message.member.user.id
 
         // Create event in DB
-        const prisma = new PrismaClient()
 
-        const db = async () => {
-          prisma.event.create({
-            data: {
-              name: eventName,
-              requester: requester,
-              date: eventDate,
-            },
+        try {
+          // prisma.event.create({
+          //   data: {
+          //     name: eventName,
+          //     requester: requester,
+          //     date: eventDate,
+          //   },
+          // })
+          return res.status(200).send({
+            ...basicEphMessage(
+              `Thanks! I'll check in with everyone about ${eventName} on ${eventDate.toDateString()} and report back when I know their availabilities`
+            ),
+          })
+        } catch (e) {
+          console.error(e)
+          return res.status(200).send({
+            ...basicEphMessage(`Something went wrong processing that event`),
           })
         }
-
-        db()
-          .then(async () => await prisma.$disconnect())
-          .catch(async (e) => {
-            console.error(e)
-            await prisma.$disconnect()
-            process.exit(1)
-          })
-
-        return res.status(200).send({
-          ...basicEphMessage(
-            `Thanks! I'll check in with everyone about ${eventName} on ${eventDate.toDateString()} and report back when I know their availabilities`
-          ),
-        })
       }
 
       // Add Show Modal Submission
