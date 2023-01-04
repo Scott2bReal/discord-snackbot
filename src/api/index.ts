@@ -53,15 +53,17 @@ export default async function (req: VercelRequest, res: VercelResponse) {
     */
 
     if (message.type === 2) {
+      const commandName = message.data.name
+
       // Test command
-      if (message.data.name === 'test') {
+      if (commandName === 'test') {
         return res.status(200).send({
           ...basicEphMessage(`Tested!`),
         })
       }
 
       // Open availability modal
-      if (message.data.name === 'availability') {
+      if (commandName === 'availability') {
         return res.status(200).send({
           type: 9,
           data: {
@@ -70,8 +72,12 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         })
       }
 
+      // Display list of events in DB
+      if (commandName === '') {
+      }
+
       // Open add show modal
-      if (message.data.name === 'addshow') {
+      if (commandName === 'addshow') {
         return res.status(200).send({
           type: 9,
           data: {
@@ -81,7 +87,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       }
 
       // Remove show select menu
-      if (message.data.name === 'removeshow') {
+      if (commandName === 'removeshow') {
         // Get list of shows from Sanity to populate list
         console.log(`Fetching shows from sanity...`)
         const result = await sanityAPI('shows')
@@ -99,35 +105,35 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       }
 
       // Install commands
-      if (message.data.name === 'install') {
+      if (commandName === 'install') {
         await installCommands()
         return res.status(200).send({
           ...basicEphMessage(`I've installed any new commands!`),
         })
       }
-    }
 
-    // Delete command
-    if (message.data.name === 'delete') {
-      // Get list of installed commands
-      const commands = await getInstalledCommands()
-      console.log(`Installed commands: `, commands)
+      // Delete command
+      if (commandName === 'delete') {
+        // Get list of installed commands
+        const commands = await getInstalledCommands()
+        console.log(`Installed commands: `, commands)
 
-      // Give user a list of commands to choose from
-      if (commands) {
+        // Give user a list of commands to choose from
+        if (commands) {
+          return res.status(200).send({
+            type: 4,
+            data: {
+              ...deleteCommandsMenu(commands),
+              flags: 64,
+            },
+          })
+        }
+
+        // If we're here then there are no commands
         return res.status(200).send({
-          type: 4,
-          data: {
-            ...deleteCommandsMenu(commands),
-            flags: 64,
-          },
+          ...basicEphMessage(`There are no commands to delete!`),
         })
       }
-
-      // If we're here then there are no commands
-      return res.status(200).send({
-        ...basicEphMessage(`There are no commands to delete!`),
-      })
     }
 
     // Select Menu Submissions
