@@ -1,5 +1,8 @@
 {
   "type": "module",
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+  },
   "scripts": {
     "build": "echo 'No build required'",
     "register": "ts-node src/utils/discord/register.ts"
