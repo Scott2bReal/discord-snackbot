@@ -11,8 +11,7 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default(cuid())
-  discordId String     @unique
+  id        String     @id @unique
   userName  String
   events    Event[]
   responses Response[]
