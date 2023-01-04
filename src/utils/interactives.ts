@@ -105,7 +105,7 @@ export const removeShowMenu = (shows: Show[]) => {
         components: [
           {
             type: 3,
-            custom_id: 'class_select_1',
+            custom_id: 'removeShow',
             options: shows.map(show => {
             const showDate = show.date ? ` - ${show.date}` : ''
               return {
@@ -120,5 +120,30 @@ export const removeShowMenu = (shows: Show[]) => {
         ],
       },
     ],
+  }
+}
+
+export const deleteCommandsMenu = (commands: Array<any>) => {
+  return {
+    content: 'Select the commands you would like to delete',
+    components: [
+      {
+        type: 1,
+        components: [
+          {
+            type: 3,
+            custom_id: 'deleteCommandsMenu',
+            options: commands.map(command => {
+              return {
+                label: command.name,
+                value: command.id,
+                description: command.description
+              }
+            }),
+            max_values: 3,
+          }
+        ]
+      }
+    ]
   }
 }

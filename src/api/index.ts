@@ -1,12 +1,13 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import {
-  discordAPI,
+  getInstalledCommands,
+  // discordAPI,
   // deleteCommand,
   // discordAPI,
   installCommands,
   isValidReq,
 } from '../utils/discord'
-import { addShowModal, availModal, removeShowMenu } from '../utils/modals'
+import { addShowModal, availModal, deleteCommandsMenu, removeShowMenu } from '../utils/interactives'
 import {
   getShowData,
   isValidDate,
@@ -16,7 +17,7 @@ import {
 import { sanityAPI } from '../utils/sanity'
 import { Show } from '../types'
 
-export default async function (req: VercelRequest, res: VercelResponse) {
+export default async function(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     // Discord wants to verify requests
     if (!isValidReq(req)) {
@@ -35,9 +36,14 @@ export default async function (req: VercelRequest, res: VercelResponse) {
     logJSON(message, `Received request`)
     console.log(`Message type: `, message.type)
 
-    // Slash command listeners
-    // These are simple, just need to respond to a slash command request from
-    // Discord with a 200 code and whatever content we want the bot to display
+    /*
+    Slash command listeners
+
+    Most of these are simple, we just need to respond to a slash command
+    request from Discord with a 200 code and whatever content we want the
+    bot to display
+    */
+
     if (message.type === 2) {
       // Test command
       if (message.data.name === 'test') {
@@ -72,7 +78,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
       // Remove show select menu
       if (message.data.name === 'removeshow') {
-        // Get list of shows from Sanity
+        // Get list of shows from Sanity to populate list
         console.log(`Fetching shows from sanity...`)
         const result = await sanityAPI('shows')
 
@@ -101,6 +107,34 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       }
     }
 
+    // Delete command
+    if (message.data.name === 'delete') {
+      console.log(`Received delete command`)
+      // Get list of installed commands
+      const commands = await getInstalledCommands()
+      console.log(`Installed commands: `, commands)
+
+      // Give user a list of commands to choose from
+      if (commands) {
+        return res.status(200).send({
+          type: 4,
+          data: {
+            ...deleteCommandsMenu(commands),
+            flags: 64,
+          }
+        })
+      }
+
+      // If we're here then there are no commands
+      return res.status(200).send({
+        type: 4,
+        data: {
+          content: `There are no commands to delete!`,
+          flags: 64,
+        }
+      })
+    }
+
     // Select Menu Submissions
     if (message.type === 3) {
       // Remove Show Menu Submission
@@ -108,9 +142,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         // Get ID of user-selected show to delete
         const showsToRemove = message.data.values
 
-        logJSON(showsToRemove, `Shows to delete`)
         // Delete in Sanity using ID
-
         await Promise.allSettled(
           showsToRemove.map(async (showID: string) => {
             await sanityAPI('shows', {
@@ -120,7 +152,10 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           })
         )
 
-        const showsDeleted = `${showsToRemove.length === 1 ? 'one show' : `${showsToRemove.length} shows`}`
+        const showsDeleted = `${showsToRemove.length === 1
+            ? 'one show'
+            : `${showsToRemove.length} shows`
+          }`
 
         // Confirm deletion
         return res.status(200).send({

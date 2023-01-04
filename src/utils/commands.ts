@@ -25,4 +25,9 @@ export const COMMANDS: { [commandName: string]: any } = {
     description: 'Install any new commands',
     type: 1,
   },
+  delete: {
+    name: 'delete',
+    description: 'Delete a command',
+    type: 1,
+  }
 }

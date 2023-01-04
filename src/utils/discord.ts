@@ -42,7 +42,7 @@ export async function installCommands() {
   // For each uninstalled command, install that command
   return await Promise.allSettled(
     uninstalled.map(async (commandName) => {
-      installGuildCommand(commandName)
+      await installGuildCommand(commandName)
     })
   )
 }
