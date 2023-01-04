@@ -1,11 +1,3 @@
-export const MEMBERS = [
-  { id: '463823197356294156', username: 'Caleb M' },
-  { id: '628079232819658752', username: 'Scott2bReal' },
-  { id: '1059704679677841418', username: 'snackbot' },
-  { id: '1059893151273341019', username: 'ryangac' },
-  { id: '1060014844008480828', username: 'Keith B' },
-]
-
 export function logJSON(json: object, message?: string) {
   if (message !== undefined) {
     console.log(`${message}:`, JSON.stringify(json, null, 2))
@@ -29,6 +21,7 @@ export function getShowData(message: any) {
   const location = message.data.components[3].components[0].value
   const locationData = location.split(',') as string[]
 
+  // Hoooo boy
   showData.venueName = message.data.components[0].components[0].value
   showData.subtitle = message.data.components[1].components[0].value ?? ''
   showData.date = message.data.components[2].components[0].value ?? ''

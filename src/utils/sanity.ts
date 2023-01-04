@@ -1,5 +1,3 @@
-import { logJSON } from "./helpers"
-
 type SanityMutation =
   | 'create'
   | 'createOrReplace'
