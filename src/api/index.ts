@@ -8,6 +8,7 @@ import {
 import { addShowModal, availModal, removeShowMenu } from '../utils/modals'
 import { getShowData, isValidDate, isValidLocation, logJSON } from '../utils/helpers'
 import { sanityAPI } from '../utils/sanity'
+import { Show } from '../types'
 
 export default async function (req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
@@ -64,10 +65,17 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
       // Remove show select menu
       if (message.data.name === 'removeshow') {
+        // Get list of shows from Sanity
+        const result = await sanityAPI('shows')
+
+        const shows = result.result as Show[]
+        logJSON(shows, `Shows in Sanity`)
+
         return res.status(200).send({
-          type: 3,
+          type: 4,
           data: {
-            ...removeShowMenu,
+            ...removeShowMenu(shows),
+            flags: 64,
           },
         })
       }
@@ -79,6 +87,20 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           type: 4,
           data: {
             content: `I've installed any new commands!`,
+            flags: 64,
+          }
+        })
+      }
+    }
+
+    // Select Menu Submissions
+    if (message.type === 3) {
+      // Remove Show Menu Submission
+      if (message.data.custom_id === 'removeShow') {
+        return res.status(200).send({
+          type: 4,
+          data: {
+            content: `I've received your submission but haven't figured out how to delete shows yet`,
             flags: 64,
           }
         })

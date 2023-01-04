@@ -1,3 +1,5 @@
+import { Show } from '../types'
+
 export const availModal = {
   custom_id: 'availRequest',
   title: 'Availability',
@@ -93,49 +95,29 @@ export const addShowModal = {
   ],
 }
 
-export const removeShowMenu = {
-  content: 'Pick a show to remove',
-  components: [
-    {
-      type: 1,
-      components: [
-        {
-          type: 3,
-          custom_id: 'class_select_1',
-          options: [
-            {
-              label: 'Rogue',
-              value: 'rogue',
-              description: 'Sneak n stab',
-              emoji: {
-                name: 'rogue',
-                id: '625891304148303894',
-              },
-            },
-            {
-              label: 'Mage',
-              value: 'mage',
-              description: "Turn 'em into a sheep",
-              emoji: {
-                name: 'mage',
-                id: '625891304081063986',
-              },
-            },
-            {
-              label: 'Priest',
-              value: 'priest',
-              description: "You get heals when I'm done doing damage",
-              emoji: {
-                name: 'priest',
-                id: '625891303795982337',
-              },
-            },
-          ],
-          placeholder: 'Choose a class',
-          min_values: 1,
-          max_values: 3,
-        },
-      ],
-    },
-  ],
+export const removeShowMenu = (shows: Show[]) => {
+  return {
+    content: 'Pick a show to remove',
+    custom_id: 'removeShow',
+    components: [
+      {
+        type: 1,
+        components: [
+          {
+            type: 3,
+            custom_id: 'class_select_1',
+            options: shows.map(show => {
+            const showDate = show.date ? ` - ${show.date}` : ''
+              return {
+                label: show.venueName,
+                value: show._id,
+                description: `${show.city}, ${show.state}${showDate}`,
+              }
+            }),
+            placeholder: 'Pick a show to delete',
+          },
+        ],
+      },
+    ],
+  }
 }
