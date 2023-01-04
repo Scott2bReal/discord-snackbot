@@ -76,28 +76,23 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       if (commandName === 'listevents') {
         const prisma = new PrismaClient()
 
-        const db = async () => {
-          return await prisma.event.findMany({
+        try {
+          const events = await prisma.event.findMany({
             include: {
               requester: true,
               responses: true,
             },
           })
-        }
 
-        try {
-          const events = await db()
-          const eventList = events.map(e => e.name).join(', ')
-          console.log(eventList)
-          prisma.$disconnect()
+          const eventList = events.map((e) => e.name).join(', ')
+
           return res.status(200).send({
-            ...basicEphMessage(eventList)
+            ...basicEphMessage(eventList),
           })
         } catch (e) {
           console.error(e)
-          prisma.$disconnect()
           return res.status(200).send({
-            ...basicEphMessage(`Something went wrong getting that list of events`)
+            ...basicEphMessage(`Something went wrong fetching those events`),
           })
         }
       }
