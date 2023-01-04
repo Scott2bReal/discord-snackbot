@@ -5,6 +5,7 @@
     "register": "ts-node src/utils/discord/register.ts"
   },
   "dependencies": {
+    "@prisma/client": "^4.8.0",
     "@types/node": "^18.11.17",
     "@vercel/node": "^2.8.1",
     "tweetnacl": "^1.0.3",
