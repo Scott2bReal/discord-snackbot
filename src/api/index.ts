@@ -111,7 +111,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         logJSON(showsToRemove, `Shows to delete`)
         // Delete in Sanity using ID
 
-        const result = await Promise.allSettled(
+        await Promise.allSettled(
           showsToRemove.map(async (showID: string) => {
             await sanityAPI('shows', {
               mutationType: 'delete',
@@ -120,7 +120,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           })
         )
 
-        const showsDeleted = `${result.length === 1 ? 'one show' : `${result.length} shows`}`
+        const showsDeleted = `${showsToRemove.length === 1 ? 'one show' : `${showsToRemove.length} shows`}`
 
         // Confirm deletion
         return res.status(200).send({
