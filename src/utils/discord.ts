@@ -3,14 +3,6 @@ import nacl from 'tweetnacl'
 import { ApplicationCommand, GuildMember } from '../types'
 import { COMMANDS } from './commands'
 
-export const MEMBERS = [
-  { id: '463823197356294156', username: 'Caleb M' },
-  { id: '628079232819658752', username: 'Scott2bReal' },
-  { id: '1059704679677841418', username: 'snackbot' },
-  { id: '1059893151273341019', username: 'ryangac' },
-  { id: '1060014844008480828', username: 'Keith B' },
-]
-
 export async function discordAPI(
   endpoint: string,
   method: string,
