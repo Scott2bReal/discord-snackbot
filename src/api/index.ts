@@ -191,7 +191,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
 
           return res.status(200).send({
             ...basicEphMessage(
-              `I deleted those ${commandsToDelete} command${commandsToDelete === 1 ? '' : 's'
+              `I deleted ${commandsToDelete} command${commandsToDelete === 1 ? '' : 's'
               }. If you'd like to reinstall, you can run /install`
             ),
           })
@@ -199,7 +199,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
           console.error(e)
           return res.status(200).send({
             ...basicEphMessage(
-              `I've removed those commands. If you'd like to reinstall them, please run /install`
+              `Something went wrong trying to delete commands! Try again or hit up Scott`
             ),
           })
         }
