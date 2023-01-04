@@ -126,7 +126,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         return res.status(200).send({
           type: 4,
           data: {
-            content: `I removed ${showsDeleted} for you! If you need to undo, you can still find deleted shows at https://nastysnacks.sanity.studio`,
+            content: `I removed ${showsDeleted} for you! If you need to undo this, you can still find and restore deleted shows at https://nastysnacks.sanity.studio`,
             flags: 64,
           },
         })
