@@ -23,8 +23,9 @@ import {
 } from '../utils/helpers'
 import { sanityAPI } from '../utils/sanity'
 import { Show } from '../types'
+import { PrismaClient } from '@prisma/client'
 
-export default async function(req: VercelRequest, res: VercelResponse) {
+export default async function (req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     // Discord wants to verify requests
     if (!isValidReq(req)) {
@@ -146,10 +147,11 @@ export default async function(req: VercelRequest, res: VercelResponse) {
           })
         )
 
-        const showsDeleted = `${showsToRemove.length === 1
+        const showsDeleted = `${
+          showsToRemove.length === 1
             ? 'one show'
             : `${showsToRemove.length} shows`
-          }`
+        }`
 
         // Confirm deletion
         return res.status(200).send({
@@ -177,7 +179,8 @@ export default async function(req: VercelRequest, res: VercelResponse) {
 
           return res.status(200).send({
             ...basicEphMessage(
-              `I deleted ${commandsToDelete} command${commandsToDelete === 1 ? '' : 's'
+              `I deleted ${commandsToDelete} command${
+                commandsToDelete === 1 ? '' : 's'
               }. If you'd like to reinstall, you can run /install`
             ),
           })
@@ -210,6 +213,28 @@ export default async function(req: VercelRequest, res: VercelResponse) {
         // Now that we know we can work with the data, let's grab it and do stuff
         const eventDate = new Date(`${submitted}T00:00:00-06:00`)
         const eventName = message.data.components[0].components[0].value
+        const requester = message.member.user.id
+
+        // Create event in DB
+        const prisma = new PrismaClient()
+
+        const db = async () => {
+          prisma.event.create({
+            data: {
+              name: eventName,
+              requester: requester,
+              date: eventDate,
+            },
+          })
+        }
+
+        db()
+          .then(async () => await prisma.$disconnect())
+          .catch(async (e) => {
+            console.error(e)
+            await prisma.$disconnect()
+            process.exit(1)
+          })
 
         return res.status(200).send({
           ...basicEphMessage(
