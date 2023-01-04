@@ -20,6 +20,7 @@ model User {
 model Event {
   id          String     @id @default(cuid())
   name        String
+  date        DateTime
   requester   User       @relation(fields: [requesterId], references: [id])
   requesterId String
   responses   Response[]
