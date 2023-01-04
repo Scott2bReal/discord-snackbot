@@ -1,15 +1,18 @@
 {
+  "type": "module",
   "compilerOptions": {
     "target": "es6",
-    "module": "commonjs",
+    "module": "esnext",
     "declaration": true,
     "strict": true,
     "outDir": "dist",
     "sourceMap": true,
     "esModuleInterop": true,
     "noImplicitAny": true,
-    "noImplicitThis": true
+    "noImplicitThis": true,
+    "esModuleInterop": true,
+    "moduleResolution": "Node"
   },
-  "include": ["src"],
+  "include": ["src", "**/*.ts"],
   "exclude": ["src/__tests__", "node_modules"]
 }
