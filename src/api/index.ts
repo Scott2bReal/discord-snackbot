@@ -23,8 +23,10 @@ import {
 } from '../utils/helpers'
 import { sanityAPI } from '../utils/sanity'
 import { Show } from '../types'
+import { PrismaClient } from '@prisma/client'
 
 export default async function (req: VercelRequest, res: VercelResponse) {
+  const prisma = new PrismaClient()
   if (req.method === 'POST') {
     // Discord wants to verify requests
     if (!isValidReq(req)) {
@@ -40,8 +42,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       })
     }
 
-    logJSON(message, `Received request`)
-    console.log(`Message type: `, message.type)
+    // logJSON(message, `Received request`)
 
     /*
     Slash command listeners
@@ -63,6 +64,9 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
       // Open availability modal
       if (commandName === 'availability') {
+        const users = await prisma.user.findMany()
+
+        logJSON(users, `Users in DB`)
         return res.status(200).send({
           type: 9,
           data: {
@@ -72,28 +76,29 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       }
 
       // Display list of events in DB
-      // if (commandName === 'listevents') {
-      //   try {
-      //     console.log(`Fetching list of events...`)
-      //     const events = await prisma.event.findMany({
-      //       include: {
-      //         requester: true,
-      //         responses: true,
-      //       },
-      //     })
-      //
-      //     const eventList = events.map((e) => e.name).join(', ')
-      //
-      //     return res.status(200).send({
-      //       ...basicEphMessage(eventList),
-      //     })
-      //   } catch (e) {
-      //     console.error(e)
-      //     return res.status(200).send({
-      //       ...basicEphMessage(`Something went wrong fetching those events`),
-      //     })
-      //   }
-      // }
+      if (commandName === 'listevents') {
+        try {
+          console.log(`Fetching list of events...`)
+
+          const events = await prisma.event.findMany({
+            include: {
+              requester: true,
+              responses: true,
+            }
+          })
+
+          const eventList = events.map((e) => e.name).join(', ')
+
+          return res.status(200).send({
+            ...basicEphMessage(eventList),
+          })
+        } catch (e) {
+          console.error(e)
+          return res.status(200).send({
+            ...basicEphMessage(`Something went wrong fetching those events`),
+          })
+        }
+      }
 
       // Open add show modal
       if (commandName === 'addshow') {
