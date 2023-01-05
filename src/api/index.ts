@@ -209,15 +209,10 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           const scott = users.find(user => user.userName === 'Scott2bReal')
           if (!event || !users || !scott) throw new Error(`Couldn't find event or users or scott`)
 
-          await discordAPI('users/@me/channels', 'POST', {
+          const channel = await discordAPI('users/@me/channels', 'POST', {
             recipient_id: scott.id,
           })
-          .then(res => res.json())
-          .then(channel => {
-              discordAPI(`channels/${channel.id}/messages`, 'POST', {
-                content: `BEEP BOOP are you available on ${event.date.toDateString()} for ${event.name}?`
-              })
-            })
+          logJSON(channel, `Tried to open DM channel`)
 
           // TODO DM everyone
           return res.status(200).send({
