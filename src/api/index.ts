@@ -190,7 +190,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
             },
           })
           const all = await prisma.user.findMany()
-          const users = all.filter(user => user.userName === 'Scott2bReal' || user.userName === 'ryangac')
+          const users = all.filter(user => user.userName === 'Scott2bReal')
           logJSON(users, 'Found these users')
           if (!event || !users) throw new Error(`Couldn't find event or users`)
           await Promise.allSettled(users.map(async (user) => {

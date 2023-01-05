@@ -256,5 +256,28 @@ export async function requestAvailFromUser(userId: string, event: Event) {
     content: `BEEP BOOP are you available for ${
       event.name
     } on ${event.date.toDateString()}?`,
+    components: [
+      {
+        type: 1,
+        components: [
+          {
+            custom_id: `yes:${event.id}`,
+            // Button
+            type: 2,
+            // Success (green) button style
+            style: 3,
+            label: `Yes`,
+          },
+          {
+            custom_id: `no:${event.id}`,
+            // Button
+            type: 2,
+            // Success (green) button style
+            style: 4,
+            label: `No`,
+          },
+        ],
+      },
+    ],
   })
 }
