@@ -45,7 +45,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       })
     }
 
-    logJSON(message, `Received request`)
+    // logJSON(message, `Received request`)
     console.log(`Message type: `, message.type)
 
     /*
@@ -72,7 +72,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           const events = await prisma.event.findMany()
           if (!events) throw new Error(`Couldn't find events`)
 
-          console.log(`Successfully found events!`)
           return res.status(200).send({
             type: 4,
             data: {
@@ -94,7 +93,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         const users = await prisma.user.findMany()
         const userNames = users.map((user) => user.userName)
 
-        console.log(`Found list of users`)
         return res.status(200).send({
           ...basicEphMessage(
             `Here are the users I know about: ${userNames.join(', ')}`
@@ -207,6 +205,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
               userName: 'Scott2bReal' || 'Caleb M',
             }
           })
+          logJSON(users, 'Found these users')
 
           if (!event || !users) throw new Error(`Couldn't find event or users`)
 
