@@ -13,6 +13,7 @@ import {
   availModal,
   deleteCommandsMenu,
   removeShowMenu,
+  userSelectMenu,
 } from '../utils/interactives'
 import {
   basicEphMessage,
@@ -24,7 +25,7 @@ import {
 import { sanityAPI } from '../utils/sanity'
 import { Show } from '../types'
 
-export default async function(req: VercelRequest, res: VercelResponse) {
+export default async function (req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     // Discord wants to verify requests
     if (!isValidReq(req)) {
@@ -53,14 +54,34 @@ export default async function(req: VercelRequest, res: VercelResponse) {
 
     if (message.type === 2) {
       // Test command
-      if (message.data.name === 'test') {
+      const commandName = message.data.name
+
+      if (commandName === 'test') {
         return res.status(200).send({
           ...basicEphMessage(`Tested!`),
         })
       }
 
+      // List users
+      if (commandName === 'listusers') {
+        return res.status(200).send({
+          ...basicEphMessage(`I don't know about any users yet!`)
+        })
+      }
+
+      // Add user
+      if (commandName === 'adduser') {
+        return res.status(200).send({
+          type: 4,
+          data: {
+            ...userSelectMenu,
+            flags: 64,
+          },
+        })
+      }
+
       // Open availability modal
-      if (message.data.name === 'availability') {
+      if (commandName === 'availability') {
         return res.status(200).send({
           type: 9,
           data: {
@@ -70,7 +91,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
       }
 
       // Open add show modal
-      if (message.data.name === 'addshow') {
+      if (commandName === 'addshow') {
         return res.status(200).send({
           type: 9,
           data: {
@@ -80,7 +101,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
       }
 
       // Remove show select menu
-      if (message.data.name === 'removeshow') {
+      if (commandName === 'removeshow') {
         // Get list of shows from Sanity to populate list
         console.log(`Fetching shows from sanity...`)
         const result = await sanityAPI('shows')
@@ -98,41 +119,65 @@ export default async function(req: VercelRequest, res: VercelResponse) {
       }
 
       // Install commands
-      if (message.data.name === 'install') {
+      if (commandName === 'install') {
         await installCommands()
         return res.status(200).send({
           ...basicEphMessage(`I've installed any new commands!`),
         })
       }
-    }
 
-    // Delete command
-    if (message.data.name === 'delete') {
-      // Get list of installed commands
-      const commands = await getInstalledCommands()
-      console.log(`Installed commands: `, commands)
+      // Delete command
+      if (commandName === 'delete') {
+        // Get list of installed commands
+        const commands = await getInstalledCommands()
+        console.log(`Installed commands: `, commands)
 
-      // Give user a list of commands to choose from
-      if (commands) {
+        // Give user a list of commands to choose from
+        if (commands) {
+          return res.status(200).send({
+            type: 4,
+            data: {
+              ...deleteCommandsMenu(commands),
+              flags: 64,
+            },
+          })
+        }
+
+        // If we're here then there are no commands
         return res.status(200).send({
-          type: 4,
-          data: {
-            ...deleteCommandsMenu(commands),
-            flags: 64,
-          },
+          ...basicEphMessage(`There are no commands to delete!`),
         })
       }
-
-      // If we're here then there are no commands
-      return res.status(200).send({
-        ...basicEphMessage(`There are no commands to delete!`),
-      })
     }
 
     // Select Menu Submissions
     if (message.type === 3) {
+      const menuName = message.message.interaction.name
+
+      // Add User Submission
+      if (menuName === 'adduser') {
+        const userId = Object.keys(message.data.resolved.users)[0]
+        const userName = message.data.resolved.users[userId].username
+
+        try {
+          return res.status(200).send({
+            ...basicEphMessage(
+              `Once Scott get's the database working, I'll add ${userName} to it!`
+            )
+          })
+
+        } catch (e) {
+          console.error(e)
+          return res.status(200).send({
+            ...basicEphMessage(
+              `Something went wrong adding that user! They may already be in my data banks. Try again, and ask Scott if it doesn't work`
+            ),
+          })
+        }
+      }
+
       // Remove Show Menu Submission
-      if (message.message.interaction.name === 'removeshow') {
+      if (menuName === 'removeshow') {
         // Get ID of user-selected show to delete
         const showsToRemove = message.data.values
 
@@ -146,10 +191,11 @@ export default async function(req: VercelRequest, res: VercelResponse) {
           })
         )
 
-        const showsDeleted = `${showsToRemove.length === 1
+        const showsDeleted = `${
+          showsToRemove.length === 1
             ? 'one show'
             : `${showsToRemove.length} shows`
-          }`
+        }`
 
         // Confirm deletion
         return res.status(200).send({
@@ -160,7 +206,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
       }
 
       // Delete Commands Menu Submission
-      if (message.message.interaction.name === 'delete') {
+      if (menuName === 'delete') {
         // Get IDs of commands user wants to delete
         logJSON(message, `Received delete command submission`)
         const ids = message.data.values as string[]
@@ -177,7 +223,8 @@ export default async function(req: VercelRequest, res: VercelResponse) {
 
           return res.status(200).send({
             ...basicEphMessage(
-              `I deleted ${commandsToDelete} command${commandsToDelete === 1 ? '' : 's'
+              `I deleted ${commandsToDelete} command${
+                commandsToDelete === 1 ? '' : 's'
               }. If you'd like to reinstall, you can run /install`
             ),
           })

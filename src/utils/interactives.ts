@@ -150,3 +150,18 @@ export const deleteCommandsMenu = (commands: Array<any>) => {
     ],
   }
 }
+
+export const userSelectMenu = {
+  content: 'Select a user',
+  components: [
+    {
+      type: 1,
+      components: [
+        {
+          type: 5,
+          custom_id: 'userSelectMenu',
+        }
+      ]
+    }
+  ]
+}

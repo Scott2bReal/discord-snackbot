@@ -1,3 +1,6 @@
+// ID of install command - included to omit from delete commands menu
+export const INSTALL_ID = '1060197765365387334'
+
 // List of commands which will be registered with the server
 export const COMMANDS: { [commandName: string]: any } = {
   test: {
@@ -29,7 +32,15 @@ export const COMMANDS: { [commandName: string]: any } = {
     name: 'delete',
     description: 'Delete a command',
     type: 1,
-  }
+  },
+  listusers: {
+    name: 'listusers',
+    description: 'List users in database',
+    type: 1,
+  },
+  adduser: {
+    name: 'adduser',
+    description: 'Add user to the database',
+    type: 1,
+  },
 }
-
-export const INSTALL_ID = '1060197765365387334'
