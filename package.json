@@ -1,14 +1,16 @@
 {
   "type": "module",
   "scripts": {
-    "build": "echo 'No build required'",
+    "build": "echo 'No build required'"
   },
   "dependencies": {
+    "@prisma/client": "^4.8.0",
     "@vercel/node": "^2.8.1",
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@types/node": "^18.11.18",
+    "prisma": "^4.8.0",
     "typescript": "^4.9.4"
   }
 }
