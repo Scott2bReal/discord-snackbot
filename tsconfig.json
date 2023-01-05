@@ -10,6 +10,6 @@
     "noImplicitAny": true,
     "noImplicitThis": true
   },
-  "include": ["src"],
+  "include": ["src", "prisma"],
   "exclude": ["src/__tests__", "node_modules"]
 }

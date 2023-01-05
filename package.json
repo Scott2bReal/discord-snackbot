@@ -5,12 +5,12 @@
     "register": "ts-node src/utils/discord/register.ts"
   },
   "dependencies": {
-    "@types/node": "^18.11.17",
     "@vercel/node": "^2.8.1",
-    "tweetnacl": "^1.0.3",
-    "typescript": "^4.9.4"
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
-    "prisma": "^4.8.0"
+    "@types/node": "^18.11.18",
+    "prisma": "^4.8.0",
+    "typescript": "^4.9.4"
   }
 }
