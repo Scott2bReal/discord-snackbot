@@ -179,9 +179,8 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           return res.status(200).send({
             ...basicEphMessage(
               `Added user ${userName} to my data banks. Beep boop!`
-            )
+            ),
           })
-
         } catch (e) {
           console.error(e)
           return res.status(200).send({
@@ -273,12 +272,31 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         // Now that we know we can work with the data, let's grab it and do stuff
         const eventDate = new Date(`${submitted}T00:00:00-06:00`)
         const eventName = message.data.components[0].components[0].value
+        const requesterId = message.member.user.id as string
 
-        return res.status(200).send({
-          ...basicEphMessage(
-            `Thanks! I'll check in with everyone about ${eventName} on ${eventDate.toDateString()} and report back when I know their availabilities`
-          ),
-        })
+        try {
+          // Add event to DB
+          await prisma.event.create({
+            data: {
+              date: eventDate,
+              name: eventName,
+              userId: requesterId,
+            },
+          })
+
+          return res.status(200).send({
+            ...basicEphMessage(
+              `Thanks! I'll check in with everyone about ${eventName} on ${eventDate.toDateString()} and report back when I know their availabilities`
+            ),
+          })
+        } catch (e) {
+          console.error(e)
+          return res.status(200).send({
+            ...basicEphMessage(
+              `Something went wrong, I can't remember anything about that event you just told me about! Try again, and if it doesn't work then talk to Scott`
+            ),
+          })
+        }
       }
 
       // Add Show Modal Submission
