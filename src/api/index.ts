@@ -206,8 +206,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
           if (!event || !users) throw new Error(`Couldn't find event or users`)
 
-          console.log(`Trying to DM multiple users`)
-
           await Promise.allSettled(users.map(async (user) => {
             console.log(`DMing ${user.userName}...`)
             await requestAvailFromUser(user.id, event)

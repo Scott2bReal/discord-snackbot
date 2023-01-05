@@ -23,7 +23,7 @@ export const availModal = {
         {
           type: 4,
           custom_id: 'date',
-          label: 'Date (please input this format)',
+          label: 'Date (please input as YYYY-MM-DD)',
           placeholder: '2022-12-31',
           style: 1,
         },
@@ -198,7 +198,7 @@ export const availRequestSendMessage = (event: Event) => {
   // HTTP. We'll use the portion of the custom_id before the : to identify the
   // submission, and the use the event ID to send out DMs
   return {
-    content: `Beep boop! I've saved that event in my brain. Just to confirm, the event deets are: ${event.name} on ${event.date.toDateString()}\nIf that looks good, click this button and I'll hit everyone up for their availabily!`,
+    content: `Beep boop! I've saved that event in my brain. Just to confirm, the event deets are:\nEvent name: ${event.name}\nEvent date: ${event.date.toDateString()}\nIf that looks good, click this button and I'll hit everyone up for their availabily!`,
     flags: 64,
     components: [
       {
