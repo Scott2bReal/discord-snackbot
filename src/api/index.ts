@@ -24,6 +24,9 @@ import {
 } from '../utils/helpers'
 import { sanityAPI } from '../utils/sanity'
 import { Show } from '../types'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 export default async function (req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
@@ -64,8 +67,13 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
       // List users
       if (commandName === 'listusers') {
+        const users = await prisma.user.findMany()
+        const userNames = users.map((user) => user.userName)
+
         return res.status(200).send({
-          ...basicEphMessage(`I don't know about any users yet!`)
+          ...basicEphMessage(
+            `Here are the users I know about: ${userNames.join(', ')}`
+          ),
         })
       }
 
@@ -160,9 +168,17 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         const userName = message.data.resolved.users[userId].username
 
         try {
+          console.log(`Adding user to db...`)
+          await prisma.user.create({
+            data: {
+              id: userId,
+              userName: userName,
+            },
+          })
+
           return res.status(200).send({
             ...basicEphMessage(
-              `Once Scott get's the database working, I'll add ${userName} to it!`
+              `Added user ${userName} to my data banks. Beep boop!`
             )
           })
 
