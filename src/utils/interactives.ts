@@ -1,5 +1,5 @@
 import { Show } from '../types'
-import { Event } from '@prisma/client'
+import { Event, Response, User } from '@prisma/client'
 import { INSTALL_ID } from './commands'
 
 export const availModal = {
@@ -177,16 +177,57 @@ export const eventSelectMenu = (events: Event[]) => {
           {
             type: 3,
             custom_id: 'selectedEvent',
-            options: events.map(event => {
+            options: events.map((event) => {
               return {
                 label: event.name,
                 value: event.id,
                 description: event.date.toDateString(),
               }
-            })
-          }
-        ]
+            }),
+          },
+        ],
       },
     ],
   }
+}
+
+export const availRequestSendMessage = (info: {
+  eventName: string
+  eventDate: Date
+}) => {
+  const { eventName, eventDate } = info
+
+  return {
+    content: `Beep boop! I've saved that event in my brain. Just to confirm, the event deets are ${eventName} on ${eventDate.toDateString()}. If that looks good, click this button and I'll hit everyone up for their availabily!`,
+    flags: 64,
+    components: [
+      {
+        type: 1,
+        components: [
+          {
+            // Button
+            type: 2,
+            // Primary button style
+            style: 1,
+            label: `Confirm`,
+            custom_id: `availConfirmSend`,
+          },
+        ],
+      },
+    ],
+  }
+}
+
+export const eventInfoMessage = (
+  event: Event & { responses: (Response & { user: User })[] }
+) => {
+  const responseList = event.responses.map((response) => {
+    return `\n${response.user.userName}: ${
+      response.available ? 'Available' : 'Not available'
+    }`
+  })
+
+  return `${
+    event.name
+  }: ${event.date.toDateString()}\nResponses:${responseList}`
 }

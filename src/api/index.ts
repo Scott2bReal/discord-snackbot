@@ -11,7 +11,9 @@ import {
 import {
   addShowModal,
   availModal,
+  availRequestSendMessage,
   deleteCommandsMenu,
+  eventInfoMessage,
   eventSelectMenu,
   removeShowMenu,
   userSelectMenu,
@@ -198,6 +200,43 @@ export default async function (req: VercelRequest, res: VercelResponse) {
     if (message.type === 3) {
       const menuName = message.message.interaction.name
 
+      // Event Info Submission
+      if (menuName === 'eventinfo') {
+        try {
+          const eventId = message.data.values[0]
+          if (typeof eventId !== 'string') throw new Error(`Improper event ID`)
+          const event = await prisma.event.findUnique({
+            where: {
+              id: eventId,
+            },
+            include: {
+              responses: {
+                include: {
+                  user: true,
+                },
+              },
+            },
+          })
+          if (!event) throw new Error(`Error finding event in DB`)
+          console.log(`Found event! Sending message...`)
+          console.log(eventInfoMessage(event))
+          return res.status(200).send({
+            type: 4,
+            data: {
+              flags: 64,
+              content: eventInfoMessage(event),
+            },
+          })
+        } catch (e) {
+          console.error(e)
+          return res.status(200).send({
+            ...basicEphMessage(
+              `Yikes, I messed up finding info about that event (beep boop)`
+            ),
+          })
+        }
+      }
+
       // Add User Submission
       if (menuName === 'adduser') {
         const userId = Object.keys(message.data.resolved.users)[0]
@@ -308,6 +347,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         // Now that we know we can work with the data, let's grab it and do stuff
         const eventDate = new Date(`${submitted}T00:00:00-06:00`)
         const eventName = message.data.components[0].components[0].value
+        const info = { eventDate, eventName }
         const requesterId = message.member.user.id as string
 
         try {
@@ -321,10 +361,12 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           })
 
           console.log(`Added event to DB!`)
+          logJSON(availRequestSendMessage(info))
           return res.status(200).send({
-            ...basicEphMessage(
-              `Thanks! I'll check in with everyone about ${eventName} on ${eventDate.toDateString()} and report back when I know their availabilities`
-            ),
+            type: 4,
+            data: {
+              ...availRequestSendMessage(info),
+            },
           })
         } catch (e) {
           console.error(e)
