@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import {
   deleteCommand,
+  discordAPI,
   getInstalledCommands,
   // discordAPI,
   // deleteCommand,
@@ -196,11 +197,42 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // Select Menu Submissions
+    // Message Component Submissions
     if (message.type === 3) {
       const menuName = message.message.interaction.name
 
-      // Event Info Submission
+      // User clicked confirm button after creating avail request
+      if (message.data.custom_id?.split(':')[0] === 'availConfirmSend') {
+        try {
+          const eventId = message.data.custom_id.split(':')[1]
+
+          if (typeof eventId !== 'string') {
+            throw new Error(`Event ID needs to be a string`)
+          }
+
+          const event = await prisma.event.findUnique({
+            where: {
+              id: eventId,
+            },
+          })
+
+          if (!event) throw new Error(`Couldn't find event`)
+
+          return res.status(200).send({
+            ...basicEphMessage(`Great, I'll ask everyone about ${event.name}`),
+          })
+          // TODO message all users with event info
+        } catch (e) {
+          console.error(e)
+          return res
+            .status(200)
+            .send(
+              `Beep boop :( Something went wrong and I couldn't send that message`
+            )
+        }
+      }
+
+      // Event Info Select Menu Submission
       if (menuName === 'eventinfo') {
         try {
           const eventId = message.data.values[0]
@@ -347,12 +379,11 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         // Now that we know we can work with the data, let's grab it and do stuff
         const eventDate = new Date(`${submitted}T00:00:00-06:00`)
         const eventName = message.data.components[0].components[0].value
-        const info = { eventDate, eventName }
         const requesterId = message.member.user.id as string
 
         try {
           // Add event to DB
-          await prisma.event.create({
+          const event = await prisma.event.create({
             data: {
               date: eventDate,
               name: eventName,
@@ -361,11 +392,11 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           })
 
           console.log(`Added event to DB!`)
-          logJSON(availRequestSendMessage(info))
+          logJSON(availRequestSendMessage(event))
           return res.status(200).send({
             type: 4,
             data: {
-              ...availRequestSendMessage(info),
+              ...availRequestSendMessage(event),
             },
           })
         } catch (e) {

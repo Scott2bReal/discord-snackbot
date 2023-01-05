@@ -191,18 +191,18 @@ export const eventSelectMenu = (events: Event[]) => {
   }
 }
 
-export const availRequestSendMessage = (info: {
-  eventName: string
-  eventDate: Date
-}) => {
-  const { eventName, eventDate } = info
-
+export const availRequestSendMessage = (event: Event) => {
+  // This function takes the event as an argument so we can embed the event ID
+  // in the custom_id property of the component that gets passed along through
+  // HTTP. We'll use the portion of the custom_id before the : to identify the
+  // submission, and the use the event ID to send out DMs
   return {
-    content: `Beep boop! I've saved that event in my brain. Just to confirm, the event deets are ${eventName} on ${eventDate.toDateString()}. If that looks good, click this button and I'll hit everyone up for their availabily!`,
+    content: `Beep boop! I've saved that event in my brain. Just to confirm, the event deets are:\nEvent Name: ${event.name}\nEvent Date: ${event.date.toDateString()}\nIf that looks good, click this button and I'll hit everyone up for their availabily!`,
     flags: 64,
     components: [
       {
         type: 1,
+        custom_id: `availConfirmSend:${event.id}`,
         components: [
           {
             // Button
@@ -210,7 +210,6 @@ export const availRequestSendMessage = (info: {
             // Primary button style
             style: 1,
             label: `Confirm`,
-            custom_id: `availConfirmSend`,
           },
         ],
       },
