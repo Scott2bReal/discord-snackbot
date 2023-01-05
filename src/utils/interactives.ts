@@ -199,7 +199,7 @@ export const availRequestSendMessage = (event: Event) => {
   // submission, and the use the event ID to send out DMs
   return {
     content: `Beep boop! I've saved that event in my brain. Just to confirm, the event deets are:\n\nEvent name: ${event.name
-      }\nEvent date: ${event.date.toDateString()}\n\nIf that looks good, click this button and I'll hit everyone up for their availabily!`,
+      }\nEvent date: ${event.date.toDateString()}\n\nIf that looks good, click this button and I'll hit everyone up for their availability!`,
     flags: 64,
     components: [
       {
