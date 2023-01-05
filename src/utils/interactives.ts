@@ -170,6 +170,7 @@ export const userSelectMenu = {
 export const eventSelectMenu = (events: Event[]) => {
   return {
     content: `Beep boop here are the events I know about. Pick one and I'll tell you more about it`,
+    flags: 64,
     components: [
       {
         type: 1,
