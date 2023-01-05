@@ -23,10 +23,8 @@ import {
 } from '../utils/helpers'
 import { sanityAPI } from '../utils/sanity'
 import { Show } from '../types'
-import { PrismaClient } from '@prisma/client'
 
-export default async function(req: VercelRequest, res: VercelResponse) {
-  const prisma = new PrismaClient()
+export default async function (req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     // Discord wants to verify requests
     if (!isValidReq(req)) {
@@ -42,7 +40,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
       })
     }
 
-    // logJSON(message, `Received request`)
+    logJSON(message, `Received request`)
 
     /*
     Slash command listeners
@@ -64,9 +62,6 @@ export default async function(req: VercelRequest, res: VercelResponse) {
 
       // Open availability modal
       if (commandName === 'availability') {
-        const users = await prisma.user.findMany()
-
-        logJSON(users, `Users in DB`)
         return res.status(200).send({
           type: 9,
           data: {
@@ -77,34 +72,9 @@ export default async function(req: VercelRequest, res: VercelResponse) {
 
       // Display list of events in DB
       if (commandName === 'listevents') {
-        try {
-          console.log(`Fetching list of events...`)
-
-          const events = await prisma.event.findMany({
-            include: {
-              requester: true,
-              responses: true,
-            }
-          })
-
-          if (events.length === 0) {
-            return res.status(200).send({
-              ...basicEphMessage(`There are no events that I know of`),
-            })
-          }
-
-          const eventList = events.map((e) => e.name).join(', ')
-          console.log(eventList)
-
-          return res.status(200).send({
-            ...basicEphMessage(eventList),
-          })
-        } catch (e) {
-          console.error(e)
-          return res.status(200).send({
-            ...basicEphMessage(`Something went wrong fetching those events`),
-          })
-        }
+        return res.status(200).send({
+          ...basicEphMessage(`There are no events that I know of`),
+        })
       }
 
       // Open add show modal
@@ -184,10 +154,11 @@ export default async function(req: VercelRequest, res: VercelResponse) {
           })
         )
 
-        const showsDeleted = `${showsToRemove.length === 1
+        const showsDeleted = `${
+          showsToRemove.length === 1
             ? 'one show'
             : `${showsToRemove.length} shows`
-          }`
+        }`
 
         // Confirm deletion
         return res.status(200).send({
@@ -215,7 +186,8 @@ export default async function(req: VercelRequest, res: VercelResponse) {
 
           return res.status(200).send({
             ...basicEphMessage(
-              `I deleted ${commandsToDelete} command${commandsToDelete === 1 ? '' : 's'
+              `I deleted ${commandsToDelete} command${
+                commandsToDelete === 1 ? '' : 's'
               }. If you'd like to reinstall, you can run /install`
             ),
           })
@@ -250,27 +222,11 @@ export default async function(req: VercelRequest, res: VercelResponse) {
         const eventName = message.data.components[0].components[0].value
         const requester = message.member.user.id
 
-        // Create event in DB
-
-        try {
-          // prisma.event.create({
-          //   data: {
-          //     name: eventName,
-          //     requester: requester,
-          //     date: eventDate,
-          //   },
-          // })
-          return res.status(200).send({
-            ...basicEphMessage(
-              `Thanks! I'll check in with everyone about ${eventName} on ${eventDate.toDateString()} and report back when I know their availabilities`
-            ),
-          })
-        } catch (e) {
-          console.error(e)
-          return res.status(200).send({
-            ...basicEphMessage(`Something went wrong processing that event`),
-          })
-        }
+        return res.status(200).send({
+          ...basicEphMessage(
+            `Thanks! I'll check in with everyone about ${eventName} on ${eventDate.toDateString()} and report back when I know their availabilities`
+          ),
+        })
       }
 
       // Add Show Modal Submission
