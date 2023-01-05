@@ -203,9 +203,9 @@ export const availRequestSendMessage = (event: Event) => {
     components: [
       {
         type: 1,
-        custom_id: `availConfirmSend:${event.id}`,
         components: [
           {
+            custom_id: `availConfirmSend:${event.id}`,
             // Button
             type: 2,
             // Primary button style
