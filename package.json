@@ -1,7 +1,8 @@
 {
   "type": "module",
   "scripts": {
-    "build": "echo 'No build required'"
+    "build": "echo 'No build required'",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^4.8.0",
