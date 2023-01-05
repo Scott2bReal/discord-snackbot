@@ -1,4 +1,5 @@
 import { Show } from '../types'
+import { Event } from '@prisma/client'
 import { INSTALL_ID } from './commands'
 
 export const availModal = {
@@ -160,8 +161,32 @@ export const userSelectMenu = {
         {
           type: 5,
           custom_id: 'userSelectMenu',
-        }
-      ]
-    }
-  ]
+        },
+      ],
+    },
+  ],
+}
+
+export const eventSelectMenu = (events: Event[]) => {
+  return {
+    content: `Beep boop here are the events I know about. Pick one and I'll tell you more about it`,
+    components: [
+      {
+        type: 1,
+        components: [
+          {
+            type: 3,
+            custom_id: 'selectedEvent',
+            options: events.map(event => {
+              return {
+                label: event.name,
+                value: event.id,
+                description: event.date.toDateString(),
+              }
+            })
+          }
+        ]
+      },
+    ],
+  }
 }

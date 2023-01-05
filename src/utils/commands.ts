@@ -48,4 +48,9 @@ export const COMMANDS: { [commandName: string]: any } = {
     description: 'List events in the database',
     type: 1,
   },
+  eventinfo: {
+    name: 'eventinfo',
+    description: `View detailsl for a specific event`,
+    type: 1,
+  }
 }

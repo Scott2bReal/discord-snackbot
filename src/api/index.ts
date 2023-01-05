@@ -12,6 +12,7 @@ import {
   addShowModal,
   availModal,
   deleteCommandsMenu,
+  eventSelectMenu,
   removeShowMenu,
   userSelectMenu,
 } from '../utils/interactives'
@@ -69,13 +70,35 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       if (commandName === 'listevents') {
         const events = await prisma.event.findMany()
         const eventMessage = events
-          .map((event) => `${event.name}: ${event.date.toLocaleString()}`)
+          .map((event) => `${event.name}: ${event.date.toDateString()}`)
           .join('\n')
-
         console.log(`Found events successfully`)
         return res.status(200).send({
           ...basicEphMessage(eventMessage),
         })
+      }
+
+      // Event Info
+      if (commandName === 'eventinfo') {
+        try {
+          const events = await prisma.event.findMany()
+          if (!events) throw new Error(`Couldn't find events`)
+
+          console.log(`Successfully found events!`)
+          return res.status(200).send({
+            type: 4,
+            data: {
+              ...eventSelectMenu(events),
+            },
+          })
+        } catch (e) {
+          console.error(e)
+          return res.status(200).send({
+            ...basicEphMessage(
+              `OoOoOps, I messed up trying to find events. Try again or talk to Scott!`
+            ),
+          })
+        }
       }
 
       // List users
