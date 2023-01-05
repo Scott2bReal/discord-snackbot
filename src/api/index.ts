@@ -24,7 +24,7 @@ import {
 import { sanityAPI } from '../utils/sanity'
 import { Show } from '../types'
 
-export default async function (req: VercelRequest, res: VercelResponse) {
+export default async function(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     // Discord wants to verify requests
     if (!isValidReq(req)) {
@@ -41,6 +41,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
     }
 
     logJSON(message, `Received request`)
+    console.log(`Message type: `, message.type)
 
     /*
     Slash command listeners
@@ -51,17 +52,15 @@ export default async function (req: VercelRequest, res: VercelResponse) {
     */
 
     if (message.type === 2) {
-      const commandName = message.data.name
-
       // Test command
-      if (commandName === 'test') {
+      if (message.data.name === 'test') {
         return res.status(200).send({
           ...basicEphMessage(`Tested!`),
         })
       }
 
       // Open availability modal
-      if (commandName === 'availability') {
+      if (message.data.name === 'availability') {
         return res.status(200).send({
           type: 9,
           data: {
@@ -70,15 +69,8 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         })
       }
 
-      // Display list of events in DB
-      if (commandName === 'listevents') {
-        return res.status(200).send({
-          ...basicEphMessage(`There are no events that I know of`),
-        })
-      }
-
       // Open add show modal
-      if (commandName === 'addshow') {
+      if (message.data.name === 'addshow') {
         return res.status(200).send({
           type: 9,
           data: {
@@ -88,7 +80,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       }
 
       // Remove show select menu
-      if (commandName === 'removeshow') {
+      if (message.data.name === 'removeshow') {
         // Get list of shows from Sanity to populate list
         console.log(`Fetching shows from sanity...`)
         const result = await sanityAPI('shows')
@@ -106,35 +98,35 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       }
 
       // Install commands
-      if (commandName === 'install') {
+      if (message.data.name === 'install') {
         await installCommands()
         return res.status(200).send({
           ...basicEphMessage(`I've installed any new commands!`),
         })
       }
+    }
 
-      // Delete command
-      if (commandName === 'delete') {
-        // Get list of installed commands
-        const commands = await getInstalledCommands()
-        console.log(`Installed commands: `, commands)
+    // Delete command
+    if (message.data.name === 'delete') {
+      // Get list of installed commands
+      const commands = await getInstalledCommands()
+      console.log(`Installed commands: `, commands)
 
-        // Give user a list of commands to choose from
-        if (commands) {
-          return res.status(200).send({
-            type: 4,
-            data: {
-              ...deleteCommandsMenu(commands),
-              flags: 64,
-            },
-          })
-        }
-
-        // If we're here then there are no commands
+      // Give user a list of commands to choose from
+      if (commands) {
         return res.status(200).send({
-          ...basicEphMessage(`There are no commands to delete!`),
+          type: 4,
+          data: {
+            ...deleteCommandsMenu(commands),
+            flags: 64,
+          },
         })
       }
+
+      // If we're here then there are no commands
+      return res.status(200).send({
+        ...basicEphMessage(`There are no commands to delete!`),
+      })
     }
 
     // Select Menu Submissions
@@ -154,11 +146,10 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           })
         )
 
-        const showsDeleted = `${
-          showsToRemove.length === 1
+        const showsDeleted = `${showsToRemove.length === 1
             ? 'one show'
             : `${showsToRemove.length} shows`
-        }`
+          }`
 
         // Confirm deletion
         return res.status(200).send({
@@ -186,8 +177,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
           return res.status(200).send({
             ...basicEphMessage(
-              `I deleted ${commandsToDelete} command${
-                commandsToDelete === 1 ? '' : 's'
+              `I deleted ${commandsToDelete} command${commandsToDelete === 1 ? '' : 's'
               }. If you'd like to reinstall, you can run /install`
             ),
           })
@@ -220,7 +210,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         // Now that we know we can work with the data, let's grab it and do stuff
         const eventDate = new Date(`${submitted}T00:00:00-06:00`)
         const eventName = message.data.components[0].components[0].value
-        const requester = message.member.user.id
 
         return res.status(200).send({
           ...basicEphMessage(

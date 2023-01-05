@@ -1,18 +1,15 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": ["esnext"],
+    "target": "es6",
     "module": "commonjs",
-    "skipLibCheck": true,
+    "declaration": true,
     "strict": true,
     "outDir": "dist",
     "sourceMap": true,
     "esModuleInterop": true,
     "noImplicitAny": true,
-    "esModuleInterop": true,
-    "moduleResolution": "node",
-    "noUncheckedIndexedAccess": true,
+    "noImplicitThis": true
   },
-  "include": ["src", "**/*.ts", "prisma"],
+  "include": ["src"],
   "exclude": ["src/__tests__", "node_modules"]
 }

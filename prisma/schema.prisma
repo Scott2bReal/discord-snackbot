@@ -12,25 +12,27 @@ datasource db {
 
 model User {
   id        String     @id @default(cuid())
-  userName  String
-  responses Response[] @relation("UserToResponse")
-  events    Event[]    @relation("UserToEvent")
+  discordId String     @unique
+  events    Event[]
+  responses Response[]
 }
 
 model Event {
-  id        String     @id @default(cuid())
-  name      String
-  date      DateTime
-  userId    String
-  requester User       @relation("UserToEvent", fields: [userId], references: [id], onDelete: Cascade)
-  responses Response[] @relation("ResponseToEvent")
+  id          String     @id @default(cuid())
+  name        String
+  requester   User       @relation(fields: [requesterId], references: [id])
+  requesterId String
+  responses   Response[]
+  createdAt   DateTime   @default(now())
 }
 
 model Response {
-  id        String  @id @default(cuid())
-  userId    String
-  user      User    @relation("UserToResponse", fields: [userId], references: [id], onDelete: Cascade)
-  available Boolean
+  id        String   @id @default(cuid())
+  event     Event    @relation(fields: [eventId], references: [id])
   eventId   String
-  event     Event   @relation("ResponseToEvent", fields: [eventId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  available Boolean
+  createdAt DateTime @default(now())
+  @@unique([eventId, userId])
 }
