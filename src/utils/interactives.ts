@@ -198,7 +198,8 @@ export const availRequestSendMessage = (event: Event) => {
   // HTTP. We'll use the portion of the custom_id before the : to identify the
   // submission, and the use the event ID to send out DMs
   return {
-    content: `Beep boop! I've saved that event in my brain. Just to confirm, the event deets are:\nEvent name: ${event.name}\nEvent date: ${event.date.toDateString()}\nIf that looks good, click this button and I'll hit everyone up for their availabily!`,
+    content: `Beep boop! I've saved that event in my brain. Just to confirm, the event deets are:\n\nEvent name: ${event.name
+      }\nEvent date: ${event.date.toDateString()}\n\nIf that looks good, click this button and I'll hit everyone up for their availabily!`,
     flags: 64,
     components: [
       {
@@ -222,12 +223,10 @@ export const eventInfoMessage = (
   event: Event & { responses: (Response & { user: User })[] }
 ) => {
   const responseList = event.responses.map((response) => {
-    return `\n${response.user.userName}: ${
-      response.available ? 'Available' : 'Not available'
-    }`
+    return `\n${response.user.userName}: ${response.available ? 'Available' : 'Not available'
+      }`
   })
 
-  return `${
-    event.name
-  }: ${event.date.toDateString()}\nResponses:${responseList}`
+  return `${event.name
+    }: ${event.date.toDateString()}\nResponses:${responseList}`
 }
