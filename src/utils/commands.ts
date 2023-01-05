@@ -43,4 +43,9 @@ export const COMMANDS: { [commandName: string]: any } = {
     description: 'Add user to the database',
     type: 1,
   },
+  listevents: {
+    name: 'listevents',
+    description: 'List events in the database',
+    type: 1,
+  },
 }

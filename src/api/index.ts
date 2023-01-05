@@ -65,6 +65,19 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         })
       }
 
+      // List Events
+      if (commandName === 'listevents') {
+        const events = await prisma.event.findMany()
+        const eventMessage = events
+          .map((event) => `${event.name}: ${event.date.toLocaleString()}`)
+          .join('\n')
+
+        console.log(`Found events successfully`)
+        return res.status(200).send({
+          ...basicEphMessage(eventMessage),
+        })
+      }
+
       // List users
       if (commandName === 'listusers') {
         const users = await prisma.user.findMany()
@@ -284,6 +297,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
             },
           })
 
+          console.log(`Added event to DB!`)
           return res.status(200).send({
             ...basicEphMessage(
               `Thanks! I'll check in with everyone about ${eventName} on ${eventDate.toDateString()} and report back when I know their availabilities`
