@@ -12,7 +12,7 @@ datasource db {
 
 model User {
   id        String     @id
-  discordId String     @unique
+  userName  String
   events    Event[]
   responses Response[]
 }
@@ -34,5 +34,6 @@ model Response {
   userId    String
   available Boolean
   createdAt DateTime @default(now())
+
   @@unique([eventId, userId])
 }
