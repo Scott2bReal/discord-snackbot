@@ -25,7 +25,7 @@ import { sanityAPI } from '../utils/sanity'
 import { Show } from '../types'
 import { PrismaClient } from '@prisma/client'
 
-export default async function (req: VercelRequest, res: VercelResponse) {
+export default async function(req: VercelRequest, res: VercelResponse) {
   const prisma = new PrismaClient()
   if (req.method === 'POST') {
     // Discord wants to verify requests
@@ -87,7 +87,14 @@ export default async function (req: VercelRequest, res: VercelResponse) {
             }
           })
 
+          if (events.length === 0) {
+            return res.status(200).send({
+              ...basicEphMessage(`There are no events that I know of`),
+            })
+          }
+
           const eventList = events.map((e) => e.name).join(', ')
+          console.log(eventList)
 
           return res.status(200).send({
             ...basicEphMessage(eventList),
@@ -177,11 +184,10 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           })
         )
 
-        const showsDeleted = `${
-          showsToRemove.length === 1
+        const showsDeleted = `${showsToRemove.length === 1
             ? 'one show'
             : `${showsToRemove.length} shows`
-        }`
+          }`
 
         // Confirm deletion
         return res.status(200).send({
@@ -209,8 +215,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
           return res.status(200).send({
             ...basicEphMessage(
-              `I deleted ${commandsToDelete} command${
-                commandsToDelete === 1 ? '' : 's'
+              `I deleted ${commandsToDelete} command${commandsToDelete === 1 ? '' : 's'
               }. If you'd like to reinstall, you can run /install`
             ),
           })
