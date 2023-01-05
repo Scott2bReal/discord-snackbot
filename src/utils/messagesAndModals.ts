@@ -1,6 +1,8 @@
 import { Show } from '../types'
 import { Event, Response, User } from '@prisma/client'
 import { INSTALL_ID } from './commands'
+import { logJSON } from './helpers'
+import { discordAPI } from './discord'
 
 export const availModal = {
   custom_id: 'availRequest',
@@ -198,8 +200,9 @@ export const availRequestSendMessage = (event: Event) => {
   // HTTP. We'll use the portion of the custom_id before the : to identify the
   // submission, and the use the event ID to send out DMs
   return {
-    content: `Beep boop! I've saved that event in my brain. Just to confirm, the event deets are:\n\nEvent name: ${event.name
-      }\nEvent date: ${event.date.toDateString()}\n\nIf that looks good, click this button and I'll hit everyone up for their availability!`,
+    content: `Beep boop! I've saved that event in my brain. Just to confirm, the event deets are:\n\nEvent name: ${
+      event.name
+    }\nEvent date: ${event.date.toDateString()}\n\nIf that looks good, click this button and I'll hit everyone up for their availability!`,
     flags: 64,
     components: [
       {
@@ -223,10 +226,35 @@ export const eventInfoMessage = (
   event: Event & { responses: (Response & { user: User })[] }
 ) => {
   const responseList = event.responses.map((response) => {
-    return `\n${response.user.userName}: ${response.available ? 'Available' : 'Not available'
-      }`
+    return `\n${response.user.userName}: ${
+      response.available ? 'Available' : 'Not available'
+    }`
   })
 
-  return `${event.name
-    }: ${event.date.toDateString()}\nResponses:${responseList}`
+  return `${
+    event.name
+  }: ${event.date.toDateString()}\nResponses:${responseList}`
+}
+
+export const basicEphMessage = (content: string) => {
+  return {
+    type: 4,
+    data: {
+      flags: 64,
+      content: content,
+    },
+  }
+}
+
+export async function requestAvailFromUser(userId: string, event: Event) {
+  const channel = await discordAPI('users/@me/channels', 'POST', {
+    recipient_id: userId,
+  })
+  logJSON(channel, `Tried to open channel`)
+
+  return await discordAPI(`channels/${channel.id}/messages`, 'POST', {
+    content: `BEEP BOOP are you available for ${
+      event.name
+    } on ${event.date.toDateString()}?`,
+  })
 }

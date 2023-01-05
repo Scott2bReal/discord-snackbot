@@ -36,7 +36,7 @@ export async function installCommands() {
 
   // Filter list of COMMANDS to only those which are not installed
   const uninstalled = findUninstalledCommands(installed)
-  console.log(`Uninstalled: `, uninstalled)
+  console.log(`Commands to install: `, uninstalled)
 
   // If no commands are not installed, return
   if (!uninstalled || uninstalled.length === 0) return
@@ -112,7 +112,7 @@ export async function installGuildCommand(commandName: string) {
   const command = COMMANDS[commandName]
 
   try {
-    console.log(`Installing `, commandName)
+    console.log(`Installing ${commandName}...`)
     const result = await discordAPI(endpoint, 'POST', command)
     return result
   } catch (e) {
@@ -125,15 +125,4 @@ export async function getAllGuildMembers() {
     `/guilds/${process.env.SNACKS_GUILD_ID}/members?limit=10`,
     'GET'
   )) as GuildMember[]
-}
-
-export async function requestAvailFromUser(userId: string, event: Event) {
-  const channel = await discordAPI('users/@me/channels', 'POST', {
-    recipient_id: userId,
-  })
-  logJSON(channel, `Tried to open channel`)
-
-  return await discordAPI(`channels/${channel.id}/messages`, 'POST', {
-    content: `BEEP BOOP are you available for ${event.name} on ${event.date.toDateString()}?`
-  })
 }

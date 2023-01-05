@@ -32,13 +32,3 @@ export function getShowData(message: any) {
 
   return showData
 }
-
-export const basicEphMessage = (content: string) => {
-  return {
-    type: 4,
-    data: {
-      flags: 64,
-      content: content,
-    },
-  }
-}

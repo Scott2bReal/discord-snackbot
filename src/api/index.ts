@@ -4,20 +4,20 @@ import {
   getInstalledCommands,
   installCommands,
   isValidReq,
-  requestAvailFromUser,
 } from '../utils/discord'
 import {
   addShowModal,
   availModal,
   availRequestSendMessage,
+  basicEphMessage,
   deleteCommandsMenu,
   eventInfoMessage,
   eventSelectMenu,
   removeShowMenu,
+  requestAvailFromUser,
   userSelectMenu,
-} from '../utils/interactives'
+} from '../utils/messagesAndModals'
 import {
-  basicEphMessage,
   getShowData,
   isValidDate,
   isValidLocation,
@@ -45,21 +45,21 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       })
     }
 
-    // logJSON(message, `Received request`)
+    logJSON(message, `Received request`)
     console.log(`Message type: `, message.type)
 
     /*
     Slash command listeners
 
-    Most of these are simple, we just need to respond to a slash command
+    A lot of these are simple, we just need to respond to a slash command
     request from Discord with a 200 code and whatever content we want the
-    bot to display
+    bot to display. Some are more complicated and need some data fetching,
+    however
     */
 
     if (message.type === 2) {
       // Test command
       const commandName = message.data.name
-
       if (commandName === 'test') {
         return res.status(200).send({
           ...basicEphMessage(`Tested!`),
@@ -71,7 +71,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         try {
           const events = await prisma.event.findMany()
           if (!events) throw new Error(`Couldn't find events`)
-
           return res.status(200).send({
             type: 4,
             data: {
@@ -92,7 +91,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       if (commandName === 'listusers') {
         const users = await prisma.user.findMany()
         const userNames = users.map((user) => user.userName)
-
         return res.status(200).send({
           ...basicEphMessage(
             `Here are the users I know about: ${userNames.join(', ')}`
@@ -134,12 +132,9 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       // Remove show select menu
       if (commandName === 'removeshow') {
         // Get list of shows from Sanity to populate list
-        console.log(`Fetching shows from sanity...`)
         const result = await sanityAPI('shows')
-
         const shows = result.result as Show[]
         logJSON(shows, `Shows in Sanity`)
-
         return res.status(200).send({
           type: 4,
           data: {
@@ -162,7 +157,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         // Get list of installed commands
         const commands = await getInstalledCommands()
         console.log(`Installed commands: `, commands)
-
         // Give user a list of commands to choose from
         if (commands) {
           return res.status(200).send({
@@ -173,7 +167,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
             },
           })
         }
-
         // If we're here then there are no commands
         return res.status(200).send({
           ...basicEphMessage(`There are no commands to delete!`),
@@ -184,33 +177,26 @@ export default async function (req: VercelRequest, res: VercelResponse) {
     // Message Component Submissions
     if (message.type === 3) {
       const menuName = message.message.interaction.name
-
       // User clicked confirm button after creating avail request
       if (message.data.custom_id?.split(':')[0] === 'availConfirmSend') {
         try {
           const eventId = message.data.custom_id.split(':')[1]
-
           if (typeof eventId !== 'string') {
             throw new Error(`Event ID needs to be a string`)
           }
-
           const event = await prisma.event.findUnique({
             where: {
               id: eventId,
             },
           })
-
           const all = await prisma.user.findMany()
           const users = all.filter(user => user.userName === 'Scott2bReal' || user.userName === 'ryangac')
           logJSON(users, 'Found these users')
-
           if (!event || !users) throw new Error(`Couldn't find event or users`)
-
           await Promise.allSettled(users.map(async (user) => {
             console.log(`DMing ${user.userName}...`)
             await requestAvailFromUser(user.id, event)
           }))
-
           return res.status(200).send({
             ...basicEphMessage(`Great, I've asked everyone about ${event.name}`),
           })
@@ -265,7 +251,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       if (menuName === 'adduser') {
         const userId = Object.keys(message.data.resolved.users)[0]
         const userName = message.data.resolved.users[userId].username
-
         try {
           console.log(`Adding user to db...`)
           await prisma.user.create({
@@ -274,7 +259,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
               userName: userName,
             },
           })
-
           return res.status(200).send({
             ...basicEphMessage(
               `Added user ${userName} to my data banks. Beep boop!`
@@ -294,7 +278,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       if (menuName === 'removeshow') {
         // Get ID of user-selected show to delete
         const showsToRemove = message.data.values
-
         // Delete in Sanity using ID
         await Promise.allSettled(
           showsToRemove.map(async (showID: string) => {
@@ -304,13 +287,11 @@ export default async function (req: VercelRequest, res: VercelResponse) {
             })
           })
         )
-
         const showsDeleted = `${
           showsToRemove.length === 1
             ? 'one show'
             : `${showsToRemove.length} shows`
         }`
-
         // Confirm deletion
         return res.status(200).send({
           ...basicEphMessage(
@@ -326,15 +307,13 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         const ids = message.data.values as string[]
         const commandsToDelete = ids.length
         if (commandsToDelete === 0) return res.status(200).send('')
-
-        // For each of those commands, delete
+        // For each of those commands, delete it!
         try {
           await Promise.allSettled(
             ids.map(async (id) => {
               return await deleteCommand(id)
             })
           )
-
           return res.status(200).send({
             ...basicEphMessage(
               `I deleted ${commandsToDelete} command${
@@ -358,7 +337,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       // Availability Request Modal Submission
       if (message.data.custom_id === 'availRequest') {
         const submitted = message.data.components[1].components[0].value
-
         // We need the dates in a specific format to make sure we can convert them to actual dates
         if (!(typeof submitted === 'string') || !isValidDate(submitted)) {
           return res.status(200).send({
@@ -367,12 +345,10 @@ export default async function (req: VercelRequest, res: VercelResponse) {
             ),
           })
         }
-
         // Now that we know we can work with the data, let's grab it and do stuff
         const eventDate = new Date(`${submitted}T00:00:00-06:00`)
         const eventName = message.data.components[0].components[0].value
         const requesterId = message.member.user.id as string
-
         try {
           // Add event to DB
           const event = await prisma.event.create({
@@ -382,9 +358,8 @@ export default async function (req: VercelRequest, res: VercelResponse) {
               userId: requesterId,
             },
           })
-
-          console.log(`Added event to DB!`)
-          logJSON(availRequestSendMessage(event))
+          // Send message to user confirming event details, and prompting them
+          // to DM everyone
           return res.status(200).send({
             type: 4,
             data: {
@@ -405,7 +380,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       if (message.data.custom_id === 'addShow') {
         const dateString = message.data.components[2].components[0].value
         const location = message.data.components[3].components[0].value
-
         // Check date and ask for new one if no good
         if (!(typeof dateString === 'string') || !isValidDate(dateString)) {
           return res.status(200).send({
@@ -420,9 +394,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
             ),
           })
         }
-
         const showData = getShowData(message)
-
         try {
           await sanityAPI('shows', {
             mutationType: 'create',
@@ -430,7 +402,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
               ...showData,
             },
           })
-
           return res.status(200).send({
             ...basicEphMessage(
               `Beep Boop! I just added that show to the website. Check it out at https://nastysnacks.netlify.app/#shows`
