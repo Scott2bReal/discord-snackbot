@@ -69,18 +69,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         })
       }
 
-      // List Events
-      if (commandName === 'listevents') {
-        const events = await prisma.event.findMany()
-        const eventMessage = events
-          .map((event) => `${event.name}: ${event.date.toDateString()}`)
-          .join('\n')
-        console.log(`Found events successfully`)
-        return res.status(200).send({
-          ...basicEphMessage(eventMessage),
-        })
-      }
-
       // Event Info
       if (commandName === 'eventinfo') {
         try {
