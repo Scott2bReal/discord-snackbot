@@ -97,6 +97,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         const users = await prisma.user.findMany()
         const userNames = users.map((user) => user.userName)
 
+        console.log(`Found list of users`)
         return res.status(200).send({
           ...basicEphMessage(
             `Here are the users I know about: ${userNames.join(', ')}`
@@ -204,12 +205,24 @@ export default async function (req: VercelRequest, res: VercelResponse) {
             },
           })
 
-          if (!event) throw new Error(`Couldn't find event`)
+          const users = await prisma.user.findMany()
+          const scott = users.find(user => user.userName === 'Scott2bReal')
+          if (!event || !users || !scott) throw new Error(`Couldn't find event or users or scott`)
 
-          return res.status(200).send({
-            ...basicEphMessage(`Great, I'll ask everyone about ${event.name}`),
+          await discordAPI('users/@me/channels', 'POST', {
+            recipient_id: scott.id,
           })
-          // TODO message all users with event info
+          .then(res => res.json())
+          .then(channel => {
+              discordAPI(`channels/${channel.id}/messages`, 'POST', {
+                content: `BEEP BOOP are you available on ${event.date.toDateString()} for ${event.name}?`
+              })
+            })
+
+          // TODO DM everyone
+          return res.status(200).send({
+            ...basicEphMessage(`Great, I've asked everyone about ${event.name}`),
+          })
         } catch (e) {
           console.error(e)
           return res
