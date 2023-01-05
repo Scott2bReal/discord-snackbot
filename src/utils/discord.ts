@@ -2,6 +2,8 @@ import { VercelRequest } from '@vercel/node'
 import nacl from 'tweetnacl'
 import { ApplicationCommand, GuildMember } from '../types'
 import { COMMANDS } from './commands'
+import { Event } from '@prisma/client'
+import { logJSON } from './helpers'
 
 export async function discordAPI(
   endpoint: string,
@@ -123,4 +125,15 @@ export async function getAllGuildMembers() {
     `/guilds/${process.env.SNACKS_GUILD_ID}/members?limit=10`,
     'GET'
   )) as GuildMember[]
+}
+
+export async function requestAvailFromUser(userId: string, event: Event) {
+  const channel = await discordAPI('users/@me/channels', 'POST', {
+    recipient_id: userId,
+  })
+  logJSON(channel, `Tried to open channel`)
+
+  return await discordAPI(`channels/${channel.id}/messages`, 'POST', {
+    content: `BEEP BOOP are you available for ${event.name} on ${event.date.toDateString()}?`
+  })
 }

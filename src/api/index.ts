@@ -1,13 +1,10 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import {
   deleteCommand,
-  discordAPI,
   getInstalledCommands,
-  // discordAPI,
-  // deleteCommand,
-  // discordAPI,
   installCommands,
   isValidReq,
+  requestAvailFromUser,
 } from '../utils/discord'
 import {
   addShowModal,
@@ -209,12 +206,10 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           const scott = users.find(user => user.userName === 'Scott2bReal')
           if (!event || !users || !scott) throw new Error(`Couldn't find event or users or scott`)
 
-          const channel = await discordAPI('users/@me/channels', 'POST', {
-            recipient_id: scott.id,
-          })
-          logJSON(channel, `Tried to open DM channel`)
+          console.log(`Trying to DM about event`)
+          const dm = await requestAvailFromUser(scott.id, event)
+          logJSON(dm, `Tried to DM ${scott.userName}`)
 
-          // TODO DM everyone
           return res.status(200).send({
             ...basicEphMessage(`Great, I've asked everyone about ${event.name}`),
           })
