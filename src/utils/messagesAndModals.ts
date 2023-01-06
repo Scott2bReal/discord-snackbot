@@ -169,28 +169,33 @@ export const userSelectMenu = {
 }
 
 export const eventSelectMenu = (events: Event[]) => {
-  return {
-    content: `Beep boop here are the events I know about. Pick one and I'll tell you more about it`,
-    flags: 64,
-    components: [
-      {
-        type: 1,
+  return events.length === 0
+    ? {
+        content: `Beep boop! I don't know about any events...`,
+        flags: 64,
+      }
+    : {
+        content: `Beep boop here are the events I know about. Pick one and I'll tell you more about it`,
+        flags: 64,
         components: [
           {
-            type: 3,
-            custom_id: 'selectedEvent',
-            options: events.map((event) => {
-              return {
-                label: event.name,
-                value: event.id,
-                description: event.date.toDateString(),
-              }
-            }),
+            type: 1,
+            components: [
+              {
+                type: 3,
+                custom_id: 'selectedEvent',
+                options: events.map((event) => {
+                  return {
+                    label: event.name,
+                    value: event.id,
+                    description: event.date.toDateString(),
+                  }
+                }),
+              },
+            ],
           },
         ],
-      },
-    ],
-  }
+      }
 }
 
 export const availRequestSendMessage = (event: Event) => {

@@ -197,10 +197,16 @@ export default async function (req: VercelRequest, res: VercelResponse) {
               },
             })
             const all = await prisma.user.findMany()
-            const users = all.filter((user) => user.userName === 'Scott2bReal')
+            const users = all.filter(
+              (user) =>
+                user.userName === 'Scott2bReal' ||
+                user.userName === 'ryangac' ||
+                user.userName === 'Caleb M'
+            )
             logJSON(users, 'Found these users')
             if (!event || !users)
               throw new Error(`Couldn't find event or users`)
+            // DM everyone
             await Promise.allSettled(
               users.map(async (user) => {
                 console.log(`DMing ${user.userName}...`)
@@ -238,8 +244,8 @@ export default async function (req: VercelRequest, res: VercelResponse) {
                 `Couldn't determine event or user ID when recording user's availability response`
               )
             const botResponse = availability
-            ? `Great, you're available! Beep boop. I'll let ${requester.userName} know`
-            : `Too bad! That's why I exist though. I'll let ${requester.userName} know`
+              ? `Great, you're available! Beep boop. I'll let ${requester.userName} know`
+              : `Too bad! That's why I exist though. I'll let ${requester.userName} know`
             // Record their response
             await prisma.response.create({
               data: {
