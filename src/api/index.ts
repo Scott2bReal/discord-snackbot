@@ -194,7 +194,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
               },
               include: {
                 requester: true,
-              }
+              },
             })
             const all = await prisma.user.findMany()
             const users = all.filter((user) => user.userName === 'Scott2bReal')
@@ -228,9 +228,11 @@ export default async function (req: VercelRequest, res: VercelResponse) {
             const availability = interpretResponse(message.data.custom_id)
             const userId = message.user.id
             const eventId = message.data.custom_id.split(':')[2]
-            const requester = await prisma.event.findUnique({
-              where: { id: eventId },
-            }).requester()
+            const requester = await prisma.event
+              .findUnique({
+                where: { id: eventId },
+              })
+              .requester()
             if (!userId || !eventId || !requester)
               throw new Error(
                 `Couldn't determine event or user ID when recording user's availability response`
@@ -244,7 +246,9 @@ export default async function (req: VercelRequest, res: VercelResponse) {
               },
             })
             return res.status(200).send({
-              ...basicEphMessage(`Thanks! I'll let ${requester.userName} know.`),
+              ...basicEphMessage(
+                `Thanks! I'll let ${requester.userName} know.`
+              ),
             })
           } catch (e) {
             console.error(e)
@@ -252,7 +256,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
               .status(200)
               .send(
                 basicEphMessage(
-                  `Bleep blop I messed up! I wasn't able to record that response. Please reach out to the requester or in the availability channel`
+                  `Bleep blop I messed up. Or maybe you did! Keep in mind that you can only respond to one of these requests once. Either way, I wasn't able to record that response. Please reach out to the requester or in the availability channel.`
                 )
               )
           }
@@ -280,7 +284,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           })
           if (!event) throw new Error(`Error finding event in DB`)
           console.log(`Found event! Sending message...`)
-          console.log(eventInfoMessage(event))
           return res.status(200).send({
             type: 4,
             data: {

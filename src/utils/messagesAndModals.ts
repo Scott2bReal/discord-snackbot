@@ -1,7 +1,6 @@
 import { Show } from '../types'
 import { Event, Response, User } from '@prisma/client'
 import { INSTALL_ID } from './commands'
-import { logJSON } from './helpers'
 import { discordAPI } from './discord'
 
 export const availModal = {
@@ -253,7 +252,6 @@ export async function requestAvailFromUser(
   const channel = await discordAPI('users/@me/channels', 'POST', {
     recipient_id: userId,
   })
-  logJSON(channel, `Tried to open channel`)
 
   return await discordAPI(`channels/${channel.id}/messages`, 'POST', {
     content: `BEEP BOOP ${

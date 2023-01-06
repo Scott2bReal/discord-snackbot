@@ -2,8 +2,6 @@ import { VercelRequest } from '@vercel/node'
 import nacl from 'tweetnacl'
 import { ApplicationCommand, GuildMember } from '../types'
 import { COMMANDS } from './commands'
-import { Event } from '@prisma/client'
-import { logJSON } from './helpers'
 
 export async function discordAPI(
   endpoint: string,
