@@ -226,7 +226,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           try {
             // Get relevant info about the request
             const availability = interpretResponse(message.data.custom_id)
-            const userId = message.member.user.id
+            const userId = message.user.id
             const eventId = message.data.custom_id.split(':')[2]
             const requester = await prisma.event.findUnique({
               where: { id: eventId },
@@ -258,6 +258,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           }
         }
       }
+      // Select Menu Submissions
       const menuName = message.message.interaction?.name
 
       // Event Info Select Menu Submission
