@@ -30,7 +30,7 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-export default async function (req: VercelRequest, res: VercelResponse) {
+export default async function(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     // Discord wants to verify requests
     if (!isValidReq(req)) {
@@ -246,9 +246,8 @@ export default async function (req: VercelRequest, res: VercelResponse) {
               },
             })
             return res.status(200).send({
-              ...basicEphMessage(
-                `Thanks! I'll let ${requester.userName} know.`
-              ),
+              type: 4,
+              content: `Thanks! I'll let ${requester.userName} know.`
             })
           } catch (e) {
             console.error(e)
@@ -341,11 +340,10 @@ export default async function (req: VercelRequest, res: VercelResponse) {
             })
           })
         )
-        const showsDeleted = `${
-          showsToRemove.length === 1
-            ? 'one show'
-            : `${showsToRemove.length} shows`
-        }`
+        const showsDeleted = `${showsToRemove.length === 1
+          ? 'one show'
+          : `${showsToRemove.length} shows`
+          }`
         // Confirm deletion
         return res.status(200).send({
           ...basicEphMessage(
@@ -370,8 +368,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           )
           return res.status(200).send({
             ...basicEphMessage(
-              `I deleted ${commandsToDelete} command${
-                commandsToDelete === 1 ? '' : 's'
+              `I deleted ${commandsToDelete} command${commandsToDelete === 1 ? '' : 's'
               }. If you'd like to reinstall, you can run /install`
             ),
           })
