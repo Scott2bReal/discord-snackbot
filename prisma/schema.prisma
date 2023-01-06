@@ -33,4 +33,5 @@ model Response {
   available Boolean
   eventId   String
   event     Event   @relation("ResponseToEvent", fields: [eventId], references: [id], onDelete: Cascade)
+  @@unique([eventId, userId])
 }
