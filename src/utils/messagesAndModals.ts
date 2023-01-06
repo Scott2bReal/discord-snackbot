@@ -246,14 +246,19 @@ export const basicEphMessage = (content: string) => {
   }
 }
 
-export async function requestAvailFromUser(userId: string, event: Event) {
+export async function requestAvailFromUser(
+  userId: string,
+  event: Event & { requester: User }
+) {
   const channel = await discordAPI('users/@me/channels', 'POST', {
     recipient_id: userId,
   })
   logJSON(channel, `Tried to open channel`)
 
   return await discordAPI(`channels/${channel.id}/messages`, 'POST', {
-    content: `BEEP BOOP are you available for ${
+    content: `BEEP BOOP ${
+      event.requester.userName
+    } wants to know if you're available for ${
       event.name
     } on ${event.date.toDateString()}?`,
     components: [
@@ -261,7 +266,7 @@ export async function requestAvailFromUser(userId: string, event: Event) {
         type: 1,
         components: [
           {
-            custom_id: `yes:${event.id}`,
+            custom_id: `response:yes:${event.id}`,
             // Button
             type: 2,
             // Success (green) button style
@@ -269,7 +274,7 @@ export async function requestAvailFromUser(userId: string, event: Event) {
             label: `Yes`,
           },
           {
-            custom_id: `no:${event.id}`,
+            custom_id: `response:no:${event.id}`,
             // Button
             type: 2,
             // Success (green) button style

@@ -21,7 +21,6 @@ export function getShowData(message: any) {
   const showData: { [key: string]: string } = {}
   const location = message.data.components[3].components[0].value
   const locationData = location.split(',') as string[]
-
   // Hoooo boy
   showData.venueName = message.data.components[0].components[0].value
   showData.subtitle = message.data.components[1].components[0].value ?? ''
@@ -29,6 +28,16 @@ export function getShowData(message: any) {
   showData.city = locationData[0]
   showData.state = locationData[1].replace(' ', '')
   showData.ticketLink = message.data.components[4].components[0].value ?? ''
-
   return showData
+}
+
+export function interpretResponse(responseCustomId: string) {
+  // Custom ids from a response button submission should look like this:
+  // response:[ANSWER(yes | no)]:[EVENT_ID]
+  const parts = responseCustomId.split(':')
+  if (parts.length !== 3) {
+    throw new Error(`Received bad ID. Cannot interpret response`)
+  }
+  const answer = parts[1]
+  return answer === 'yes'
 }

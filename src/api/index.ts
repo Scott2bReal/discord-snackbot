@@ -19,6 +19,7 @@ import {
 } from '../utils/messagesAndModals'
 import {
   getShowData,
+  interpretResponse,
   isValidDate,
   isValidLocation,
   logJSON,
@@ -176,39 +177,88 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
     // Message Component Submissions
     if (message.type === 3) {
-      const menuName = message.message.interaction.name
-      // User clicked confirm button after creating avail request
-      if (message.data.custom_id?.split(':')[0] === 'availConfirmSend') {
-        try {
-          const eventId = message.data.custom_id.split(':')[1]
-          if (typeof eventId !== 'string') {
-            throw new Error(`Event ID needs to be a string`)
-          }
-          const event = await prisma.event.findUnique({
-            where: {
-              id: eventId,
-            },
-          })
-          const all = await prisma.user.findMany()
-          const users = all.filter(user => user.userName === 'Scott2bReal')
-          logJSON(users, 'Found these users')
-          if (!event || !users) throw new Error(`Couldn't find event or users`)
-          await Promise.allSettled(users.map(async (user) => {
-            console.log(`DMing ${user.userName}...`)
-            await requestAvailFromUser(user.id, event)
-          }))
-          return res.status(200).send({
-            ...basicEphMessage(`Great, I've asked everyone about ${event.name}`),
-          })
-        } catch (e) {
-          console.error(e)
-          return res
-            .status(200)
-            .send(
-              `Beep boop :( Something went wrong and I couldn't send that message`
+      // Button Component Submissions
+      if (message.data.component_type === 2) {
+        // Requester clicked confirm button after creating avail request Sends
+        // DM to everyone in the band requesting their availability on a
+        // certain date
+        if (message.data.custom_id?.split(':')[0] === 'availConfirmSend') {
+          try {
+            const eventId = message.data.custom_id.split(':')[1]
+            if (typeof eventId !== 'string') {
+              throw new Error(`Event ID needs to be a string`)
+            }
+            const event = await prisma.event.findUnique({
+              where: {
+                id: eventId,
+              },
+              include: {
+                requester: true,
+              }
+            })
+            const all = await prisma.user.findMany()
+            const users = all.filter((user) => user.userName === 'Scott2bReal')
+            logJSON(users, 'Found these users')
+            if (!event || !users)
+              throw new Error(`Couldn't find event or users`)
+            await Promise.allSettled(
+              users.map(async (user) => {
+                console.log(`DMing ${user.userName}...`)
+                await requestAvailFromUser(user.id, event)
+              })
             )
+            return res.status(200).send({
+              ...basicEphMessage(
+                `Great, I've asked everyone about ${event.name}`
+              ),
+            })
+          } catch (e) {
+            console.error(e)
+            return res
+              .status(200)
+              .send(
+                `Beep boop :( Something went wrong and I couldn't send that message`
+              )
+          }
+        }
+        // User clicks Yes or No to respond to an availability request
+        if (message.data.custom_id.split(':')[0] === 'response') {
+          try {
+            // Get relevant info about the request
+            const availability = interpretResponse(message.data.custom_id)
+            const userId = message.member.user.id
+            const eventId = message.data.custom_id.split(':')[2]
+            const requester = await prisma.event.findUnique({
+              where: { id: eventId },
+            }).requester()
+            if (!userId || !eventId || !requester)
+              throw new Error(
+                `Couldn't determine event or user ID when recording user's availability response`
+              )
+            // Record their response
+            await prisma.response.create({
+              data: {
+                available: availability,
+                eventId: eventId,
+                userId: userId,
+              },
+            })
+            return res.status(200).send({
+              ...basicEphMessage(`Thanks! I'll let ${requester.userName} know.`),
+            })
+          } catch (e) {
+            console.error(e)
+            return res
+              .status(200)
+              .send(
+                basicEphMessage(
+                  `Bleep blop I messed up! I wasn't able to record that response. Please reach out to the requester or in the availability channel`
+                )
+              )
+          }
         }
       }
+      const menuName = message.message.interaction?.name
 
       // Event Info Select Menu Submission
       if (menuName === 'eventinfo') {
