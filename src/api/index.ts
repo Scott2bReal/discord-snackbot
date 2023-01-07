@@ -31,7 +31,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 const SNACKBOT_ID = '1059704679677841418'
 
-export default async function (req: VercelRequest, res: VercelResponse) {
+export default async function(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     // Discord wants to verify requests
     if (!isValidReq(req)) {
@@ -329,7 +329,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         if (userId === SNACKBOT_ID) {
           return res
             .status(200)
-            .send(`Bing bong! Please don't add me to the database`)
+            .send({ ...basicEphMessage(`Bing bong! Please don't add me to the database`) })
         }
         const userName = message.data.resolved.users[userId].username
         try {
@@ -368,11 +368,10 @@ export default async function (req: VercelRequest, res: VercelResponse) {
             })
           })
         )
-        const showsDeleted = `${
-          showsToRemove.length === 1
+        const showsDeleted = `${showsToRemove.length === 1
             ? 'one show'
             : `${showsToRemove.length} shows`
-        }`
+          }`
         // Confirm deletion
         return res.status(200).send({
           ...basicEphMessage(
@@ -397,8 +396,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           )
           return res.status(200).send({
             ...basicEphMessage(
-              `I deleted ${commandsToDelete} command${
-                commandsToDelete === 1 ? '' : 's'
+              `I deleted ${commandsToDelete} command${commandsToDelete === 1 ? '' : 's'
               }. If you'd like to reinstall, you can run /install`
             ),
           })
