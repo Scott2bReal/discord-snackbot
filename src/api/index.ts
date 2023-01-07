@@ -29,6 +29,7 @@ import { Show } from '../types'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
+const SNACKBOT_ID = '1059704679677841418'
 
 export default async function (req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
@@ -70,12 +71,22 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       // Event Info
       if (commandName === 'eventinfo') {
         try {
-          const events = await prisma.event.findMany()
+          const events = await prisma.event.findMany({
+            include: { responses: true },
+          })
           if (!events) throw new Error(`Couldn't find events`)
+          // We only want to see events that are in the future
+          const upcomingEvents = events.filter((event) => {
+            const yesterday = new Date()
+            yesterday.setDate(yesterday.getDate() - 1)
+            // Set the time zone offset for Chicago
+            yesterday.setTime(yesterday.getTime() + 3600 * 1000 * -6)
+            return event.date > yesterday
+          })
           return res.status(200).send({
             type: 4,
             data: {
-              ...eventSelectMenu(events),
+              ...eventSelectMenu(upcomingEvents),
             },
           })
         } catch (e) {
@@ -315,6 +326,11 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       // Add User Submission
       if (menuName === 'adduser') {
         const userId = Object.keys(message.data.resolved.users)[0]
+        if (userId === SNACKBOT_ID) {
+          return res
+            .status(200)
+            .send(`Bing bong! Please don't add me to the database`)
+        }
         const userName = message.data.resolved.users[userId].username
         try {
           console.log(`Adding user to db...`)

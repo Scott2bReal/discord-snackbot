@@ -1,5 +1,5 @@
 import { Show } from '../types'
-import { Event, Response, User } from '@prisma/client'
+import { Event, prisma, Response, User } from '@prisma/client'
 import { INSTALL_ID } from './commands'
 import { discordAPI } from './discord'
 
@@ -168,7 +168,9 @@ export const userSelectMenu = {
   ],
 }
 
-export const eventSelectMenu = (events: Event[]) => {
+export const eventSelectMenu = (
+  events: (Event & { responses: Response[] })[]
+) => {
   return events.length === 0
     ? {
         content: `Beep boop! I don't know about any events...`,
@@ -186,7 +188,7 @@ export const eventSelectMenu = (events: Event[]) => {
                 custom_id: 'selectedEvent',
                 options: events.map((event) => {
                   return {
-                    label: event.name,
+                    label: `${event.name} (${event.responses.length} responses)`,
                     value: event.id,
                     description: event.date.toDateString(),
                   }
@@ -250,6 +252,10 @@ export const basicEphMessage = (content: string) => {
   }
 }
 
+// We're using the custom_id field here to identify the type of submission,
+// record the user's response, and pass along the event ID. The bot will
+// respond to this by creating a new response and associating it with the
+// user and event
 export async function requestAvailFromUser(
   userId: string,
   event: Event & { requester: User }
