@@ -173,7 +173,7 @@ export const eventSelectMenu = (
 ) => {
   return events.length === 0
     ? {
-        content: `Beep boop! I don't know about any events...`,
+        content: `Beep boop! I don't know about any upcoming events...`,
         flags: 64,
       }
     : {
