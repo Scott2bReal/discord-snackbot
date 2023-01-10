@@ -2,6 +2,7 @@ import { Show } from '../types'
 import { Event, prisma, Response, User } from '@prisma/client'
 import { INSTALL_ID } from './commands'
 import { discordAPI } from './discord'
+import { TOTAL_BAND_MEMBERS } from '../api'
 
 export const availModal = {
   custom_id: 'availRequest',
@@ -208,7 +209,7 @@ export const availRequestSendMessage = (event: Event) => {
   return {
     content: `Beep boop! I've saved that event in my brain. Just to confirm, the event deets are:\n\nEvent name: ${
       event.name
-    }\nEvent date: ${event.date.toDateString()}\n\nIf that looks good, click this button and I'll hit everyone up for their availability!`,
+    }\nEvent date: ${event.date.toDateString()}\n\nIf that looks good, click this button and I'll hit everyone up for their availability! I'm expecting ${TOTAL_BAND_MEMBERS} responses, and I'll let you know when I've heard back from everyone.`,
     flags: 64,
     components: [
       {
@@ -293,5 +294,21 @@ export async function requestAvailFromUser(
         ],
       },
     ],
+  })
+}
+
+export async function reportBackMessage(event: Event & {responses: (Response & {user: User})[], requester: User}) {
+  const responseList = event.responses.map((response) => {
+    return `\n${response.user.userName}: ${
+      response.available ? 'Available' : 'Not available'
+    }`
+  })
+
+  const channel = await discordAPI('users/@me/channels', 'POST', {
+    recipient_id: event.requester.id,
+  })
+
+  return await discordAPI(`channels/${channel.id}/messages`, 'POST', {
+    ...basicEphMessage(`I've heard back from everyone about ${event.name} on ${event.date.toDateString()}`)
   })
 }

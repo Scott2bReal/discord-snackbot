@@ -14,6 +14,7 @@ import {
   eventInfoMessage,
   eventSelectMenu,
   removeShowMenu,
+  reportBackMessage,
   requestAvailFromUser,
   userSelectMenu,
 } from '../utils/messagesAndModals'
@@ -30,8 +31,9 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 const SNACKBOT_ID = '1059704679677841418'
+export const TOTAL_BAND_MEMBERS = 10
 
-export default async function(req: VercelRequest, res: VercelResponse) {
+export default async function (req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     // Discord wants to verify requests
     if (!isValidReq(req)) {
@@ -210,9 +212,9 @@ export default async function(req: VercelRequest, res: VercelResponse) {
             const all = await prisma.user.findMany()
             const users = all.filter((user) => {
               return (
-                user.userName === 'Scott2bReal' ||
-                user.userName === 'ryangac' ||
-                user.userName === 'Caleb M'
+                user.userName === 'Scott2bReal'
+                // user.userName === 'ryangac' ||
+                // user.userName === 'Caleb M'
               )
             })
             logJSON(users, 'Found these users')
@@ -246,15 +248,24 @@ export default async function(req: VercelRequest, res: VercelResponse) {
             const availability = interpretResponse(message.data.custom_id)
             const userId = message.user.id
             const eventId = message.data.custom_id.split(':')[2]
-            const requester = await prisma.event
-              .findUnique({
-                where: { id: eventId },
-              })
-              .requester()
-            if (!userId || !eventId || !requester)
+            const event = await prisma.event.findUnique({
+              where: { id: eventId },
+              include: {
+                responses: { include: { user: true } },
+                requester: true,
+              },
+            })
+            if (!userId || !eventId || !event) {
               throw new Error(
                 `Couldn't determine event or user ID when recording user's availability response`
               )
+            }
+            const { requester, responses, expected } = event
+
+            if (responses.length === expected - 1) {
+              const report = await reportBackMessage(event)
+            }
+
             const botResponse = availability
               ? `Great, you're available! Beep boop. I'll let ${requester.userName} know`
               : `Too bad! That's why I exist though. I'll let ${requester.userName} know`
@@ -266,6 +277,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
                 userId: userId,
               },
             })
+
             return res.status(200).send({
               type: 4,
               data: {
@@ -327,9 +339,11 @@ export default async function(req: VercelRequest, res: VercelResponse) {
       if (menuName === 'adduser') {
         const userId = Object.keys(message.data.resolved.users)[0]
         if (userId === SNACKBOT_ID) {
-          return res
-            .status(200)
-            .send({ ...basicEphMessage(`Bing bong! Please don't add me to the database`) })
+          return res.status(200).send({
+            ...basicEphMessage(
+              `Bing bong! Please don't add me to the database`
+            ),
+          })
         }
         const userName = message.data.resolved.users[userId].username
         try {
@@ -368,10 +382,11 @@ export default async function(req: VercelRequest, res: VercelResponse) {
             })
           })
         )
-        const showsDeleted = `${showsToRemove.length === 1
+        const showsDeleted = `${
+          showsToRemove.length === 1
             ? 'one show'
             : `${showsToRemove.length} shows`
-          }`
+        }`
         // Confirm deletion
         return res.status(200).send({
           ...basicEphMessage(
@@ -396,7 +411,8 @@ export default async function(req: VercelRequest, res: VercelResponse) {
           )
           return res.status(200).send({
             ...basicEphMessage(
-              `I deleted ${commandsToDelete} command${commandsToDelete === 1 ? '' : 's'
+              `I deleted ${commandsToDelete} command${
+                commandsToDelete === 1 ? '' : 's'
               }. If you'd like to reinstall, you can run /install`
             ),
           })
@@ -435,6 +451,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
               date: eventDate,
               name: eventName,
               userId: requesterId,
+              expected: 1,
             },
           })
           // Send message to user confirming event details, and prompting them
