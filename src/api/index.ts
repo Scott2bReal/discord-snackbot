@@ -262,10 +262,6 @@ export default async function (req: VercelRequest, res: VercelResponse) {
             }
             const { requester, responses, expected } = event
 
-            if (responses.length === expected - 1) {
-              const report = await reportBackMessage(event)
-            }
-
             const botResponse = availability
               ? `Great, you're available! Beep boop. I'll let ${requester.userName} know`
               : `Too bad! That's why I exist though. I'll let ${requester.userName} know`
@@ -277,6 +273,22 @@ export default async function (req: VercelRequest, res: VercelResponse) {
                 userId: userId,
               },
             })
+
+            if (responses.length === expected - 1) {
+              const recentResponse = await prisma.response.findUnique({
+                where: {
+                  eventId_userId: {
+                    eventId: eventId,
+                    userId: userId,
+                  },
+                },
+                include: {
+                  user: true,
+                }
+              })
+              if (!recentResponse) throw Error(`Error finding most recent response`)
+              const report = await reportBackMessage(event, recentResponse)
+            }
 
             return res.status(200).send({
               type: 4,

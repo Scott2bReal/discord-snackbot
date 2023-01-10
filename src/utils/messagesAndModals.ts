@@ -297,7 +297,11 @@ export async function requestAvailFromUser(
   })
 }
 
-export async function reportBackMessage(event: Event & {responses: (Response & {user: User})[], requester: User}) {
+export async function reportBackMessage(
+  event: Event & { responses: (Response & { user: User })[]; requester: User },
+  recentResponse: Response & {user: User}
+) {
+  event.responses.push(recentResponse)
   const responseList = event.responses.map((response) => {
     return `\n${response.user.userName}: ${
       response.available ? 'Available' : 'Not available'
@@ -309,6 +313,8 @@ export async function reportBackMessage(event: Event & {responses: (Response & {
   })
 
   return await discordAPI(`channels/${channel.id}/messages`, 'POST', {
-    content: `I've heard back from everyone about ${event.name} on ${event.date.toDateString()}. Here's the breakdown:${responseList}`
+    content: `I've heard back from everyone about ${
+      event.name
+    } on ${event.date.toDateString()}. Here's the breakdown:${responseList}`,
   })
 }
