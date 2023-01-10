@@ -216,12 +216,19 @@ export const availRequestSendMessage = (event: Event) => {
         type: 1,
         components: [
           {
-            custom_id: `availConfirmSend:${event.id}`,
+            custom_id: `availConfirmSend:yes:${event.id}`,
             // Button
             type: 2,
-            // Primary button style
-            style: 1,
+            // Green button style
+            style: 3,
             label: `Confirm`,
+          },
+          {
+            custom_id: `availConfirmSend:no:${event.id}`,
+            type: 2,
+            // Red button style
+            style: 4,
+            label: `Cancel`,
           },
         ],
       },
@@ -287,7 +294,7 @@ export async function requestAvailFromUser(
             custom_id: `response:no:${event.id}`,
             // Button
             type: 2,
-            // Success (green) button style
+            // Red button style
             style: 4,
             label: `No`,
           },
@@ -299,7 +306,7 @@ export async function requestAvailFromUser(
 
 export async function reportBackMessage(
   event: Event & { responses: (Response & { user: User })[]; requester: User },
-  recentResponse: Response & {user: User}
+  recentResponse: Response & { user: User }
 ) {
   event.responses.push(recentResponse)
   const responseList = event.responses.map((response) => {
@@ -313,8 +320,8 @@ export async function reportBackMessage(
   })
 
   return await discordAPI(`channels/${channel.id}/messages`, 'POST', {
-    content: `I've heard back from everyone about ${
+    content: `I've heard back from everyone about:\n ${
       event.name
-    } on ${event.date.toDateString()}. Here's the breakdown:${responseList}`,
+    }\n${event.date.toDateString()}\nHere's the breakdown:${responseList}`,
   })
 }

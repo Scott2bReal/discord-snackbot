@@ -192,53 +192,70 @@ export default async function (req: VercelRequest, res: VercelResponse) {
     if (message.type === 3) {
       // Button Component Submissions
       if (message.data.component_type === 2) {
-        // Requester clicked confirm button after creating avail request Sends
-        // DM to everyone in the band requesting their availability on a
-        // certain date
+        // Avail requester confirms or cancels event. Will either DM everyone,
+        // or will delete event
         if (message.data.custom_id?.split(':')[0] === 'availConfirmSend') {
-          try {
-            const eventId = message.data.custom_id.split(':')[1]
-            if (typeof eventId !== 'string') {
-              throw new Error(`Event ID needs to be a string`)
+          // Destructure custom ID into usable components
+          const [_, responseValue, eventId] = message.data.custom_id.split(
+            ':'
+          ) as string[]
+
+          // Requester confirms event data, wants to DM everyone
+          if (responseValue === 'yes') {
+            try {
+              if (typeof eventId !== 'string') {
+                throw new Error(`Event ID needs to be a string`)
+              }
+              const event = await prisma.event.findUnique({
+                where: {
+                  id: eventId,
+                },
+                include: {
+                  requester: true,
+                },
+              })
+              const all = await prisma.user.findMany()
+              const users = all.filter((user) => {
+                return (
+                  user.userName === 'Scott2bReal'
+                  // user.userName === 'ryangac' ||
+                  // user.userName === 'Caleb M'
+                )
+              })
+              logJSON(users, 'Found these users')
+              if (!event || !users)
+                throw new Error(`Couldn't find event or users`)
+              // DM everyone
+              await Promise.allSettled(
+                users.map(async (user) => {
+                  console.log(`DMing ${user.userName}...`)
+                  await requestAvailFromUser(user.id, event)
+                })
+              )
+              return res.status(200).send({
+                ...basicEphMessage(
+                  `Great, I've asked everyone about ${event.name}`
+                ),
+              })
+            } catch (e) {
+              console.error(e)
+              return res
+                .status(200)
+                .send(
+                  `Beep boop :( Something went wrong and I couldn't send that message`
+                )
             }
-            const event = await prisma.event.findUnique({
+            // User wants to cancel avail request. Delete event in DB
+          } else {
+            await prisma.event.delete({
               where: {
                 id: eventId,
               },
-              include: {
-                requester: true,
-              },
             })
-            const all = await prisma.user.findMany()
-            const users = all.filter((user) => {
-              return (
-                user.userName === 'Scott2bReal'
-                // user.userName === 'ryangac' ||
-                // user.userName === 'Caleb M'
-              )
-            })
-            logJSON(users, 'Found these users')
-            if (!event || !users)
-              throw new Error(`Couldn't find event or users`)
-            // DM everyone
-            await Promise.allSettled(
-              users.map(async (user) => {
-                console.log(`DMing ${user.userName}...`)
-                await requestAvailFromUser(user.id, event)
-              })
-            )
+
             return res.status(200).send({
-              ...basicEphMessage(
-                `Great, I've asked everyone about ${event.name}`
-              ),
+              ...basicEphMessage(`Ok! I've deleted that event in my brain`)
             })
-          } catch (e) {
-            console.error(e)
-            return res
-              .status(200)
-              .send(
-                `Beep boop :( Something went wrong and I couldn't send that message`
-              )
           }
         }
         // User clicks Yes or No to respond to an availability request
@@ -255,13 +272,14 @@ export default async function (req: VercelRequest, res: VercelResponse) {
                 requester: true,
               },
             })
+
             if (!userId || !eventId || !event) {
               throw new Error(
                 `Couldn't determine event or user ID when recording user's availability response`
               )
             }
-            const { requester, responses, expected } = event
 
+            const { requester, responses, expected } = event
             const botResponse = availability
               ? `Great, you're available! Beep boop. I'll let ${requester.userName} know`
               : `Too bad! That's why I exist though. I'll let ${requester.userName} know`
@@ -273,7 +291,8 @@ export default async function (req: VercelRequest, res: VercelResponse) {
                 userId: userId,
               },
             })
-
+            // If we've heard back from everyone we're expecting to hear back
+            // from, report back to even requester
             if (responses.length === expected - 1) {
               const recentResponse = await prisma.response.findUnique({
                 where: {
@@ -284,12 +303,12 @@ export default async function (req: VercelRequest, res: VercelResponse) {
                 },
                 include: {
                   user: true,
-                }
+                },
               })
-              if (!recentResponse) throw Error(`Error finding most recent response`)
-              const report = await reportBackMessage(event, recentResponse)
+              if (!recentResponse)
+                throw Error(`Error finding most recent response`)
+              await reportBackMessage(event, recentResponse)
             }
-
             return res.status(200).send({
               type: 4,
               data: {
