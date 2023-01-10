@@ -21,6 +21,7 @@ import {
 import {
   getShowData,
   interpretResponse,
+  isUpcoming,
   isValidDate,
   isValidLocation,
   logJSON,
@@ -78,13 +79,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           })
           if (!events) throw new Error(`Couldn't find events`)
           // We only want to see events that are in the future
-          const upcomingEvents = events.filter((event) => {
-            const yesterday = new Date()
-            yesterday.setDate(yesterday.getDate() - 1)
-            // Set the time zone offset for Chicago
-            yesterday.setTime(yesterday.getTime() + 3600 * 1000 * -6)
-            return event.date > yesterday
-          })
+          const upcomingEvents = events.filter(isUpcoming)
           return res.status(200).send({
             type: 4,
             data: {
