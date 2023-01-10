@@ -4,6 +4,7 @@ import { isUpcoming } from '../utils/helpers'
 import { requestAvailFromUser } from '../utils/messagesAndModals'
 
 const prisma = new PrismaClient()
+const SNACKBOT_ID = '1059704679677841418'
 export default async function (req: VercelRequest, res: VercelResponse) {
   try {
     // Find all users
@@ -12,7 +13,10 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         responses: true,
       },
     })
-    const allUserIds = users.map((user) => user.id)
+    // We don't want the SNACKBOT included
+    const allUserIds = users
+      .filter((user) => user.id !== SNACKBOT_ID)
+      .map((user) => user.id)
 
     // Find all events
     const events = await prisma.event.findMany({
