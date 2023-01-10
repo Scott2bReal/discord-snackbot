@@ -24,6 +24,7 @@ model Event {
   userId    String
   requester User       @relation("UserToEvent", fields: [userId], references: [id], onDelete: Cascade)
   responses Response[] @relation("ResponseToEvent")
+  expected  Int
 }
 
 model Response {
@@ -33,5 +34,6 @@ model Response {
   available Boolean
   eventId   String
   event     Event   @relation("ResponseToEvent", fields: [eventId], references: [id], onDelete: Cascade)
+
   @@unique([eventId, userId])
 }
