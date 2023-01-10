@@ -1,0 +1,11 @@
+name: daily-avail-reminder
+on:
+  schedule:
+    - cron: '0 18 * * *'
+jobs:
+  cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send DM reminders about availaiblity requests
+        run: |
+          curl --request GET https://discord-snack-bot.vercel.app/api/reminder

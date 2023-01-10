@@ -32,7 +32,7 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 const SNACKBOT_ID = '1059704679677841418'
-export const TOTAL_BAND_MEMBERS = 10
+export const TOTAL_BAND_MEMBERS = 2
 
 export default async function (req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
@@ -212,9 +212,9 @@ export default async function (req: VercelRequest, res: VercelResponse) {
               const all = await prisma.user.findMany()
               const users = all.filter((user) => {
                 return (
-                  user.userName === 'Scott2bReal'
+                  user.userName === 'Scott2bReal' ||
                   // user.userName === 'ryangac' ||
-                  // user.userName === 'Caleb M'
+                  user.userName === 'Caleb M'
                 )
               })
               logJSON(users, 'Found these users')
@@ -477,7 +477,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
               date: eventDate,
               name: eventName,
               userId: requesterId,
-              expected: 1,
+              expected: TOTAL_BAND_MEMBERS,
             },
           })
           // Send message to user confirming event details, and prompting them
