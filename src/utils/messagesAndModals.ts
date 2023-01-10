@@ -1,5 +1,5 @@
 import { Show } from '../types'
-import { Event, prisma, Response, User } from '@prisma/client'
+import { Event, Response, User } from '@prisma/client'
 import { INSTALL_ID } from './commands'
 import { discordAPI } from './discord'
 import { TOTAL_BAND_MEMBERS } from '../api'
