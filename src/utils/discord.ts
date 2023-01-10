@@ -124,3 +124,9 @@ export async function getAllGuildMembers() {
     'GET'
   )) as GuildMember[]
 }
+
+export async function openDMChannel(userId: string) {
+  return await discordAPI('users/@me/channels', 'POST', {
+    recipient_id: userId,
+  })
+}
