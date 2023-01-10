@@ -189,7 +189,7 @@ export const eventSelectMenu = (
                 custom_id: 'selectedEvent',
                 options: events.map((event) => {
                   return {
-                    label: `${event.name} (${event.responses.length} responses)`,
+                    label: `${event.name} (${event.responses.length}/${event.expected} responses)`,
                     value: event.id,
                     description: event.date.toDateString(),
                   }
