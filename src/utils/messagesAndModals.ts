@@ -309,6 +309,6 @@ export async function reportBackMessage(event: Event & {responses: (Response & {
   })
 
   return await discordAPI(`channels/${channel.id}/messages`, 'POST', {
-    ...basicEphMessage(`I've heard back from everyone about ${event.name} on ${event.date.toDateString()}`)
+    content: `I've heard back from everyone about ${event.name} on ${event.date.toDateString()}`
   })
 }
