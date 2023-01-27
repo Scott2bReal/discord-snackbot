@@ -6,10 +6,11 @@ A Discord Bot to help automate our band's workflows
 
 ## Getting Started
 
-If you're not already, using `nvm` to manage your node versions would be a good
-idea!
+If you're not already, using something to manage your node versions would be a good
+idea! I'd recommend [`fnm`](https://github.com/Schniz/fnm)
 
-I've included a `.nvmrc` file so you can just run `nvm use`. 
+I've included a `.node-version` file, which `fnm` can pick up on automatically
+or with an `fnm use`.
 
 Running `npm install` should install all dependencies. 
 
