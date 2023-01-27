@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import {
   deleteCommand,
+  discordAPI,
   getInstalledCommands,
   installCommands,
   isValidReq,
@@ -9,6 +10,7 @@ import {
   addShowModal,
   availModal,
   availRequestSendMessage,
+  availRequestThreadCreation,
   basicEphMessage,
   deleteCommandsMenu,
   eventInfoMessage,
@@ -220,6 +222,16 @@ export default async function (req: VercelRequest, res: VercelResponse) {
                   await requestAvailFromUser(user.id, event)
                 })
               )
+              const availsChannel = process.env.AVAILS_CHANNEL_ID ?? ''
+              // Create thread in avails channel
+              await discordAPI(
+                {
+                endpoint: `channels/${availsChannel}/messages`,
+                method: 'POST',
+                body: availRequestThreadCreation(event)
+              }
+              )
+              // Confirm with requester
               return res.status(200).send({
                 ...basicEphMessage(
                   `Great, I've asked everyone about ${event.name}`
@@ -242,7 +254,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
             })
 
             return res.status(200).send({
-              ...basicEphMessage(`Ok! I've deleted that event in my brain`)
+              ...basicEphMessage(`Ok! I've deleted that event in my brain`),
             })
           }
         }
