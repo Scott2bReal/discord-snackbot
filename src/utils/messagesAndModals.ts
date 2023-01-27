@@ -201,6 +201,14 @@ export const eventSelectMenu = (
       }
 }
 
+export const availRequestThreadCreation = (event: Event) => {
+  return {
+    content: `${
+      event.name
+    }\n${event.date.toDateString()}\n\nPlease use this thread to discuss your availability`,
+  }
+}
+
 export const availRequestSendMessage = (event: Event) => {
   // This function takes the event as an argument so we can embed the event ID
   // in the custom_id property of the component that gets passed along through
@@ -268,39 +276,47 @@ export async function requestAvailFromUser(
   userId: string,
   event: Event & { requester: User }
 ) {
-  const channel = await discordAPI('users/@me/channels', 'POST', {
-    recipient_id: userId,
+  const channel = await discordAPI({
+    endpoint: 'users/@me/channels',
+    method: 'POST',
+    body: {
+      recipient_id: userId,
+    },
   })
 
-  return await discordAPI(`channels/${channel.id}/messages`, 'POST', {
-    content: `BEEP BOOP ${
-      event.requester.userName
-    } wants to know if you're available for ${
-      event.name
-    } on ${event.date.toDateString()}?`,
-    components: [
-      {
-        type: 1,
-        components: [
-          {
-            custom_id: `response:yes:${event.id}`,
-            // Button
-            type: 2,
-            // Success (green) button style
-            style: 3,
-            label: `Yes`,
-          },
-          {
-            custom_id: `response:no:${event.id}`,
-            // Button
-            type: 2,
-            // Red button style
-            style: 4,
-            label: `No`,
-          },
-        ],
-      },
-    ],
+  return await discordAPI({
+    endpoint: `channels/${channel.id}/messages`,
+    method: 'POST',
+    body: {
+      content: `BEEP BOOP ${
+        event.requester.userName
+      } wants to know if you're available for ${
+        event.name
+      } on ${event.date.toDateString()}?`,
+      components: [
+        {
+          type: 1,
+          components: [
+            {
+              custom_id: `response:yes:${event.id}`,
+              // Button
+              type: 2,
+              // Success (green) button style
+              style: 3,
+              label: `Yes`,
+            },
+            {
+              custom_id: `response:no:${event.id}`,
+              // Button
+              type: 2,
+              // Red button style
+              style: 4,
+              label: `No`,
+            },
+          ],
+        },
+      ],
+    },
   })
 }
 
@@ -315,13 +331,21 @@ export async function reportBackMessage(
     }`
   })
 
-  const channel = await discordAPI('users/@me/channels', 'POST', {
-    recipient_id: event.requester.id,
+  const channel = await discordAPI({
+    endpoint: 'users/@me/channels',
+    method: 'POST',
+    body: {
+      recipient_id: event.requester.id,
+    },
   })
 
-  return await discordAPI(`channels/${channel.id}/messages`, 'POST', {
-    content: `I've heard back from everyone about:\n ${
-      event.name
-    }\n${event.date.toDateString()}\nHere's the breakdown:${responseList}`,
+  return await discordAPI({
+    endpoint: `channels/${channel.id}/messages`,
+    method: 'POST',
+    body: {
+      content: `I've heard back from everyone about:\n ${
+        event.name
+      }\n${event.date.toDateString()}\nHere's the breakdown:${responseList}`,
+    },
   })
 }

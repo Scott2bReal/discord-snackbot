@@ -3,11 +3,13 @@ import nacl from 'tweetnacl'
 import { ApplicationCommand, GuildMember } from '../types'
 import { COMMANDS } from './commands'
 
-export async function discordAPI(
-  endpoint: string,
-  method: string,
+interface DiscordApiProps {
+  endpoint: string
+  method: string
   body?: object
-) {
+}
+
+export async function discordAPI({ endpoint, method, body }: DiscordApiProps) {
   const options: RequestInit = {
     method: method,
     headers: {
@@ -53,7 +55,7 @@ export async function deleteCommand(commandID: string) {
 
   const endpoint = `applications/${appId}/guilds/${guildId}/commands/${commandID}`
   console.log(`Deleting command ${commandID}`)
-  return await discordAPI(endpoint, 'DELETE')
+  return await discordAPI({ endpoint, method: 'DELETE' })
 }
 
 function findUninstalledCommands(installed: Array<ApplicationCommand>) {
@@ -94,7 +96,7 @@ export async function getInstalledCommands() {
   const endpoint = `applications/${appId}/guilds/${guildId}/commands`
 
   try {
-    const res = await discordAPI(endpoint, 'GET')
+    const res = await discordAPI({ endpoint, method: 'GET' })
 
     console.log(`Installed commands: `, res)
     return res as Array<any>
@@ -111,7 +113,7 @@ export async function installGuildCommand(commandName: string) {
 
   try {
     console.log(`Installing ${commandName}...`)
-    const result = await discordAPI(endpoint, 'POST', command)
+    const result = await discordAPI({ endpoint, method: 'POST', body: command })
     return result
   } catch (e) {
     console.error(e)
@@ -119,14 +121,18 @@ export async function installGuildCommand(commandName: string) {
 }
 
 export async function getAllGuildMembers() {
-  return (await discordAPI(
-    `/guilds/${process.env.SNACKS_GUILD_ID}/members?limit=10`,
-    'GET'
-  )) as GuildMember[]
+  return (await discordAPI({
+    endpoint: `/guilds/${process.env.SNACKS_GUILD_ID}/members?limit=10`,
+    method: 'GET',
+  })) as GuildMember[]
 }
 
 export async function openDMChannel(userId: string) {
-  return await discordAPI('users/@me/channels', 'POST', {
-    recipient_id: userId,
+  return await discordAPI({
+    endpoint: 'users/@me/channels',
+    method: 'POST',
+    body: {
+      recipient_id: userId,
+    },
   })
 }
