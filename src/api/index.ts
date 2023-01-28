@@ -531,7 +531,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           })
           return res.status(200).send({
             ...basicEphMessage(
-              `Beep Boop! I just added that show to the website. Check it out at https://nastysnacks.netlify.app/#shows`
+              `Beep Boop! I just added that show to the website. Check it out at https://nastysnacks.com/#shows`
             ),
           })
         } catch (e) {
