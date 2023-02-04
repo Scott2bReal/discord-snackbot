@@ -205,7 +205,7 @@ export const availRequestThreadCreation = (event: Event) => {
   return {
     content: `${
       event.name
-    }\n${event.date.toDateString()}\n\nPlease use this thread to discuss your availability`,
+    }\n${event.date.toDateString()}\n\nPlease to this message to discuss your availability`,
   }
 }
 
