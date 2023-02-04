@@ -235,11 +235,12 @@ export default async function (req: VercelRequest, res: VercelResponse) {
               )
               const availsChannel = process.env.AVAILS_CHANNEL_ID ?? ''
               // Create thread in avails channel
-              await discordAPI({
+              const availChannelMessage = await discordAPI({
                 endpoint: `channels/${availsChannel}/messages`,
                 method: 'POST',
                 body: availRequestThreadCreation(event),
               })
+              console.log(`Tried to create avail thread in channel: `, availChannelMessage)
               // Confirm with requester
               return res.status(200).send({
                 ...basicEphMessage(
