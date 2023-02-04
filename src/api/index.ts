@@ -513,6 +513,13 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         }
         // Now that we know we can work with the data, let's grab it and do stuff
         const eventDate = new Date(`${submitted}T00:00:00-06:00`)
+        if (eventDate < new Date()) {
+          return res.status(200).send({
+            ...basicEphMessage(
+              `Sorry, I can't check availability for dates that have already passed. The date you submitted was: ${submitted}`
+            ),
+          })
+        }
         const eventName = message.data.components[0].components[0].value
         const requesterId = message.member.user.id as string
         try {
