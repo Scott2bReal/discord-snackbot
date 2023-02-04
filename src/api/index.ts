@@ -120,6 +120,17 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         })
       }
 
+      // Remove user
+      if (commandName === 'removeuser') {
+        return res.status(200).send({
+          type: 4,
+          data: {
+            ...userSelectMenu,
+            flags: 64,
+          },
+        })
+      }
+
       // Open availability modal
       if (commandName === 'availability') {
         return res.status(200).send({
@@ -224,13 +235,11 @@ export default async function (req: VercelRequest, res: VercelResponse) {
               )
               const availsChannel = process.env.AVAILS_CHANNEL_ID ?? ''
               // Create thread in avails channel
-              await discordAPI(
-                {
+              await discordAPI({
                 endpoint: `channels/${availsChannel}/messages`,
                 method: 'POST',
-                body: availRequestThreadCreation(event)
-              }
-              )
+                body: availRequestThreadCreation(event),
+              })
               // Confirm with requester
               return res.status(200).send({
                 ...basicEphMessage(
@@ -395,6 +404,37 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           return res.status(200).send({
             ...basicEphMessage(
               `Something went wrong adding that user! They may already be in my data banks. Try again, and ask Scott if it doesn't work`
+            ),
+          })
+        }
+      }
+
+      // Remove User Submission
+      if (menuName === 'removeuser') {
+        const userId = Object.keys(message.data.resolved.users)[0]
+        if (userId === SNACKBOT_ID) {
+          return res.status(200).send({
+            ...basicEphMessage(`Bing bong! I'm not even in the database!`),
+          })
+        }
+        const userName = message.data.resolved.users[userId].username
+        try {
+          console.log(`Removing user from db...`)
+          await prisma.user.delete({
+            where: {
+              id: userId,
+            },
+          })
+          return res.status(200).send({
+            ...basicEphMessage(
+              `Removed user ${userName} from my data banks. Beep boop!`
+            ),
+          })
+        } catch (e) {
+          console.error(e)
+          return res.status(200).send({
+            ...basicEphMessage(
+              `Something went wrong removing ${userName}! They may not be in my data banks. Try again, and ask Scott if it doesn't work`
             ),
           })
         }

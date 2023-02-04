@@ -43,6 +43,11 @@ export const COMMANDS: { [commandName: string]: any } = {
     description: 'Add user to the database',
     type: 1,
   },
+  removeuser: {
+    name: 'removeuser',
+    description: 'Remove user from the database',
+    type: 1,
+  },
   eventinfo: {
     name: 'eventinfo',
     description: `View details for a specific event`,
