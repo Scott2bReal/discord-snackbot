@@ -1,4 +1,6 @@
+import { PrismaClient } from '@prisma/client'
 import { VercelRequest, VercelResponse } from '@vercel/node'
+import { Show } from '../types'
 import {
   deleteCommand,
   discordAPI,
@@ -6,6 +8,14 @@ import {
   installCommands,
   isValidReq,
 } from '../utils/discord'
+import {
+  getShowData,
+  interpretResponse,
+  isUpcoming,
+  isValidDate,
+  isValidLocation,
+  logJSON,
+} from '../utils/helpers'
 import {
   addShowModal,
   availChannelThread,
@@ -20,17 +30,7 @@ import {
   requestAvailFromUser,
   userSelectMenu,
 } from '../utils/messagesAndModals'
-import {
-  getShowData,
-  interpretResponse,
-  isUpcoming,
-  isValidDate,
-  isValidLocation,
-  logJSON,
-} from '../utils/helpers'
 import { sanityAPI } from '../utils/sanity'
-import { Show } from '../types'
-import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 const SNACKBOT_ID = '1059704679677841418'
