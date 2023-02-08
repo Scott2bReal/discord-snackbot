@@ -1,6 +1,6 @@
-import { VercelRequest } from '@vercel/node'
+import type { VercelRequest } from '@vercel/node'
 import nacl from 'tweetnacl'
-import { ApplicationCommand, GuildMember } from '../types'
+import type { ApplicationCommand, GuildMember } from '../types'
 import { COMMANDS } from './commands'
 
 interface DiscordApiProps {

@@ -52,5 +52,5 @@ export const COMMANDS: { [commandName: string]: any } = {
     name: 'eventinfo',
     description: `View details for a specific event`,
     type: 1,
-  }
+  },
 }

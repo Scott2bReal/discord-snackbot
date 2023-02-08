@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
-import { VercelRequest, VercelResponse } from '@vercel/node'
-import { Show } from '../types'
+import type { VercelRequest, VercelResponse } from '@vercel/node'
+import type { Show } from '../types'
 import {
   deleteCommand,
   discordAPI,

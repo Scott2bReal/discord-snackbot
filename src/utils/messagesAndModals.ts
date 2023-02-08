@@ -1,8 +1,8 @@
-import { Show } from '../types'
 import { Event, Response, User } from '@prisma/client'
+import { TOTAL_BAND_MEMBERS } from '../api'
+import { Show } from '../types'
 import { INSTALL_ID } from './commands'
 import { discordAPI } from './discord'
-import { TOTAL_BAND_MEMBERS } from '../api'
 
 export const availModal = {
   custom_id: 'availRequest',
@@ -203,8 +203,8 @@ export const eventSelectMenu = (
 
 export const availChannelThread = (event: Event) => {
   return {
-    name: `${event.name} - ${event.date.toDateString()}}`,
-    type: 11, /* 11 is the type for public threads */
+    name: `${event.name} - ${event.date.toDateString()}`,
+    type: 11 /* 11 is the type for public threads */,
     content: `Please use this thread to discuss this event. You can use the buttons in my DM for this event to submit your availabilty.`,
   }
 }

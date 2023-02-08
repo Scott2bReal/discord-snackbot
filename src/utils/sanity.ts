@@ -53,10 +53,10 @@ export async function sanityAPI(
       mutations: [
         {
           delete: {
-            id: mutationData.data?.id
-          }
-        }
-      ]
+            id: mutationData.data?.id,
+          },
+        },
+      ],
     })
   }
 
