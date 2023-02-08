@@ -8,9 +8,9 @@ import {
 } from '../utils/discord'
 import {
   addShowModal,
+  availChannelThread,
   availModal,
   availRequestSendMessage,
-  availRequestThreadCreation,
   basicEphMessage,
   deleteCommandsMenu,
   eventInfoMessage,
@@ -235,16 +235,15 @@ export default async function (req: VercelRequest, res: VercelResponse) {
               )
               const availsChannel = process.env.AVAILS_CHANNEL_ID ?? ''
               // Create thread in avails channel
-              const availChannelMessage = await discordAPI({
-                endpoint: `channels/${availsChannel}/messages`,
+              await discordAPI({
+                endpoint: `channels/${availsChannel}/threads`,
                 method: 'POST',
-                body: availRequestThreadCreation(event),
+                body: availChannelThread(event),
               })
-              console.log(`Tried to create avail thread in channel: `, availChannelMessage)
               // Confirm with requester
               return res.status(200).send({
                 ...basicEphMessage(
-                  `Great, I've asked everyone about ${event.name}`
+                  `Great, I've asked everyone about ${event.name}. I have also created a thread in the #availabilty channel so people can discuss the event`
                 ),
               })
             } catch (e) {

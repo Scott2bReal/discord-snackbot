@@ -21,7 +21,7 @@ export type GuildMember = {
   pending: boolean
   premium_since: string | null
   roles: string[]
-  user: User,
+  user: User
   mute: boolean
   deaf: boolean
 }
@@ -44,4 +44,24 @@ export type Show = {
   state: string
   ticketLink?: string
   description?: string
+}
+
+export type DiscordMessage = {
+  id: string
+  type: number
+  content: string
+  channel_id: string
+  author: User
+  attachments: any[]
+  embeds: any[]
+  mentions: any[]
+  mention_roles: any[]
+  pinned: boolean
+  mention_everyone: boolean
+  tts: boolean
+  timestamp: string
+  edited_timestamp: string | null
+  flags: number
+  components: any[]
+  referenced_message: DiscordMessage | null
 }

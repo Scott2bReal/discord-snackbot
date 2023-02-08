@@ -201,11 +201,11 @@ export const eventSelectMenu = (
       }
 }
 
-export const availRequestThreadCreation = (event: Event) => {
+export const availChannelThread = (event: Event) => {
   return {
-    content: `${
-      event.name
-    }\n${event.date.toDateString()}\n\nPlease to this message to discuss your availability`,
+    name: `${event.name} - ${event.date.toDateString()}}`,
+    type: 11, /* 11 is the type for public threads */
+    content: `Please use this thread to discuss this event. You can use the buttons in my DM for this event to submit your availabilty.`,
   }
 }
 
