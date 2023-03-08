@@ -34,7 +34,7 @@ import { sanityAPI } from '../utils/sanity'
 
 const prisma = new PrismaClient()
 const SNACKBOT_ID = '1059704679677841418'
-export const TOTAL_BAND_MEMBERS = 10
+export const TOTAL_BAND_MEMBERS = 11
 
 export default async function (req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
