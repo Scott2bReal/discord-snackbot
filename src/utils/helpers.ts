@@ -1,4 +1,4 @@
-import { Event } from "../api";
+import { Event } from "../types";
 export function logJSON(json: object, message?: string) {
   if (message !== undefined) {
     console.log(`${message}:`, JSON.stringify(json, null, 2));

@@ -1,3 +1,5 @@
+import { Generated, Selectable } from "kysely"
+
 export type ApplicationCommand = {
   id: string
   application_id: string
@@ -21,12 +23,12 @@ export type GuildMember = {
   pending: boolean
   premium_since: string | null
   roles: string[]
-  user: User
+  user: DiscordUser
   mute: boolean
   deaf: boolean
 }
 
-export type User = {
+export type DiscordUser = {
   id: string
   username: string
   avatar: string
@@ -51,7 +53,7 @@ export type DiscordMessage = {
   type: number
   content: string
   channel_id: string
-  author: User
+  author: DiscordUser
   attachments: any[]
   embeds: any[]
   mentions: any[]
@@ -65,3 +67,34 @@ export type DiscordMessage = {
   components: any[]
   referenced_message: DiscordMessage | null
 }
+
+export interface UserTable {
+  id: Generated<number>;
+  discord_id: string;
+  userName: string;
+}
+
+export interface EventTable {
+  id: Generated<number>;
+  name: string;
+  date: Date;
+  user_id: number;
+  expected_responses: number;
+}
+
+export interface ResponseTable {
+  id: Generated<number>;
+  user_id: number;
+  event_id: number;
+  available: boolean;
+}
+
+export interface Database {
+  user: UserTable;
+  event: EventTable;
+  response: ResponseTable;
+}
+
+export type User = Selectable<UserTable>;
+export type Response = Selectable<ResponseTable>;
+export type Event = Selectable<EventTable>;

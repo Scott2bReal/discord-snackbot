@@ -1,15 +1,15 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { Generated, Kysely, Selectable } from "kysely";
-import {jsonArrayFrom} from 'kysely/helpers/mysql'
+import { VercelRequest, VercelResponse } from "@vercel/node";
+import { Kysely } from "kysely";
 import { PlanetScaleDialect } from "kysely-planetscale";
-import type { Show } from "../types";
+import { jsonArrayFrom } from "kysely/helpers/mysql";
+import { Database, Show } from "../types/index.js";
 import {
   deleteCommand,
   discordAPI,
   getInstalledCommands,
   installCommands,
   isValidReq,
-} from "../utils/discord";
+} from "../utils/discord.js";
 import {
   getShowData,
   interpretResponse,
@@ -17,7 +17,7 @@ import {
   isValidDate,
   isValidLocation,
   logJSON,
-} from "../utils/helpers";
+} from "../utils/helpers.js";
 import {
   addShowModal,
   availChannelThread,
@@ -31,50 +31,19 @@ import {
   reportBackMessage,
   requestAvailFromUser,
   userSelectMenu,
-} from "../utils/messagesAndModals";
-import { sanityAPI } from "../utils/sanity";
+} from "../utils/messagesAndModals.js";
+import { sanityAPI } from "../utils/sanity.js";
 
 const SNACKBOT_ID = "1059704679677841418";
 export const TOTAL_BAND_MEMBERS = 11;
 
-export interface UserTable {
-  id: Generated<number>;
-  discord_id: string;
-  userName: string;
-}
-
-export interface EventTable {
-  id: Generated<number>;
-  name: string;
-  date: Date;
-  user_id: number;
-  expected_responses: number;
-}
-
-export interface ResponseTable {
-  id: Generated<number>;
-  user_id: number;
-  event_id: number;
-  available: boolean;
-}
-
-export interface Database {
-  user: UserTable;
-  event: EventTable;
-  response: ResponseTable;
-}
-
-export type User = Selectable<UserTable>;
-export type Response = Selectable<ResponseTable>;
-export type Event = Selectable<EventTable>;
-
-const db = new Kysely<Database>({
-  dialect: new PlanetScaleDialect({
-    url: process.env.PLANETSCALE_DB_URL,
-  }),
-});
-
 export default async function(req: VercelRequest, res: VercelResponse) {
+  const db = new Kysely<Database>({
+    dialect: new PlanetScaleDialect({
+      url: process.env.PLANETSCALE_DB_URL,
+    }),
+  });
+
   if (req.method === "POST") {
     // Discord wants to verify requests
     if (!isValidReq(req)) {
@@ -119,15 +88,16 @@ export default async function(req: VercelRequest, res: VercelResponse) {
           // });
           const events = await db
             .selectFrom("event")
-            .selectAll('event')
+            .selectAll("event")
             .select((eb) => [
               jsonArrayFrom(
-                eb.selectFrom('response')
-                  .select('id')
-                  .whereRef('event_id', '=', 'event.id')
-              ).as('responses')
+                eb
+                  .selectFrom("response")
+                  .select("id")
+                  .whereRef("event_id", "=", "event.id")
+              ).as("responses"),
             ])
-            .groupBy('event.id')
+            .groupBy("event.id")
             .execute();
           if (!events) throw new Error(`Couldn't find events`);
           // We only want to see events that are in the future
@@ -293,7 +263,10 @@ export default async function(req: VercelRequest, res: VercelResponse) {
               await Promise.allSettled(
                 users.map(async (user) => {
                   console.log(`DMing ${user.userName}...`);
-                  await requestAvailFromUser(user.discord_id, eventWithRequester);
+                  await requestAvailFromUser(
+                    user.discord_id,
+                    eventWithRequester
+                  );
                 })
               );
               const availsChannel = process.env.AVAILS_CHANNEL_ID ?? "";
@@ -338,16 +311,19 @@ export default async function(req: VercelRequest, res: VercelResponse) {
             const eventId = Number(message.data.custom_id.split(":")[2]);
             const event = await db
               .selectFrom("event")
-              .innerJoin('user', 'event.user_id', 'user.id')
-              .selectAll('event')
-              .select(['user.userName as requesterName', 'user.discord_id as requesterDiscordId'])
+              .innerJoin("user", "event.user_id", "user.id")
+              .selectAll("event")
+              .select([
+                "user.userName as requesterName",
+                "user.discord_id as requesterDiscordId",
+              ])
               .where("id", "=", Number(eventId))
               .executeTakeFirst();
             const responses = await db
               .selectFrom("response")
-              .innerJoin('user', 'response.user_id', 'user.id')
-              .selectAll('response')
-              .select('user.userName as userName')
+              .innerJoin("user", "response.user_id", "user.id")
+              .selectAll("response")
+              .select("user.userName as userName")
               .where("event_id", "=", eventId)
               .execute();
             if (!event || !responses) {
@@ -394,15 +370,15 @@ export default async function(req: VercelRequest, res: VercelResponse) {
               // });
               const recentResponse = await db
                 .selectFrom("response")
-                .innerJoin('user', 'response.user_id', 'id')
-                .selectAll('response')
-                .select(['user.userName as userName'])
+                .innerJoin("user", "response.user_id", "id")
+                .selectAll("response")
+                .select(["user.userName as userName"])
                 .where("event_id", "=", eventId)
                 .where("user_id", "=", userId)
                 .executeTakeFirst();
               if (!recentResponse)
                 throw Error(`Error finding most recent response`);
-                await reportBackMessage(event, responses, recentResponse);
+              await reportBackMessage(event, responses, recentResponse);
             }
             return res.status(200).send({
               type: 4,
@@ -444,17 +420,14 @@ export default async function(req: VercelRequest, res: VercelResponse) {
           // });
           const event = await db
             .selectFrom("event")
-            .selectAll('event')
+            .selectAll("event")
             .where("id", "=", Number(eventId))
             .executeTakeFirst();
           if (!event) throw new Error(`Error finding event in DB`);
           const responses = await db
             .selectFrom("response")
             .innerJoin("user", "user.id", "response.user_id")
-            .select([
-              "user.userName as userName",
-              "response.available",
-            ])
+            .select(["user.userName as userName", "response.available"])
             .where("event_id", "=", Number(eventId))
             .execute();
           console.log(`Found event! Sending message...`);

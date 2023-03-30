@@ -2,9 +2,9 @@ import { VercelRequest, VercelResponse } from "@vercel/node";
 import { Kysely } from "kysely";
 import { PlanetScaleDialect } from "kysely-planetscale";
 import { jsonArrayFrom, jsonObjectFrom } from "kysely/helpers/mysql";
-import { Database } from ".";
-import { isUpcoming } from "../utils/helpers";
-import { requestAvailFromUser } from "../utils/messagesAndModals";
+import { isUpcoming } from "../utils/helpers.js";
+import { requestAvailFromUser } from "../utils/messagesAndModals.js";
+import { Database } from "../types/index.js";
 
 const SNACKBOT_ID = "1059704679677841418";
 const db = new Kysely<Database>({

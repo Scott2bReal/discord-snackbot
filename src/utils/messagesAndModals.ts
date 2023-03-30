@@ -1,8 +1,7 @@
-import type { Event, Response, User } from "../api";
-import { TOTAL_BAND_MEMBERS } from "../api";
-import type { Show } from "../types";
-import { INSTALL_ID } from "./commands";
-import { discordAPI } from "./discord";
+import { TOTAL_BAND_MEMBERS } from "../api/index.js";
+import type { Event, Show } from "../types/index.js";
+import { INSTALL_ID } from "./commands.js";
+import { discordAPI } from "./discord.js";
 
 export const availModal = {
   custom_id: "availRequest",

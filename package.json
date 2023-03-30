@@ -1,6 +1,5 @@
 {
   "scripts": {
-    "build": "echo 'No build required'"
   },
   "dependencies": {
     "@planetscale/database": "^1.6.0",
