@@ -1,8 +1,9 @@
 {
   "scripts": {
-    "build": "echo 'No build required'",
+    "build": "echo 'No build required'"
   },
   "dependencies": {
+    "@planetscale/database": "^1.6.0",
     "@vercel/node": "^2.8.1",
     "tweetnacl": "^1.0.3"
   },
