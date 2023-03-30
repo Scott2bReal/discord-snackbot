@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { Generated, Kysely, Selectable } from "kysely";
+import {jsonArrayFrom} from 'kysely/helpers/mysql'
 import { PlanetScaleDialect } from "kysely-planetscale";
 import type { Show } from "../types";
 import {
@@ -63,15 +64,15 @@ export interface Database {
   response: ResponseTable;
 }
 
+export type User = Selectable<UserTable>;
+export type Response = Selectable<ResponseTable>;
+export type Event = Selectable<EventTable>;
+
 const db = new Kysely<Database>({
   dialect: new PlanetScaleDialect({
     url: process.env.PLANETSCALE_DB_URL,
   }),
 });
-
-export type User = Selectable<UserTable>;
-export type Response = Selectable<ResponseTable>;
-export type Event = Selectable<EventTable>;
 
 export default async function(req: VercelRequest, res: VercelResponse) {
   if (req.method === "POST") {
@@ -116,7 +117,18 @@ export default async function(req: VercelRequest, res: VercelResponse) {
           // const events = await prisma.event.findMany({
           //   include: { responses: true },
           // });
-          const events = await db.selectFrom("event").selectAll().execute();
+          const events = await db
+            .selectFrom("event")
+            .selectAll('event')
+            .select((eb) => [
+              jsonArrayFrom(
+                eb.selectFrom('response')
+                  .select('id')
+                  .whereRef('event_id', '=', 'event.id')
+              ).as('responses')
+            ])
+            .groupBy('event.id')
+            .execute();
           if (!events) throw new Error(`Couldn't find events`);
           // We only want to see events that are in the future
           const upcomingEvents = events.filter(isUpcoming);
@@ -260,20 +272,28 @@ export default async function(req: VercelRequest, res: VercelResponse) {
               //     requester: true,
               //   },
               // });
-              const event = await db
+              const eventWithRequester = await db
                 .selectFrom("event")
-                .selectAll()
+                .innerJoin("user", "event.user_id", "id")
+                .select([
+                  "event.id",
+                  "event.name",
+                  "event.date",
+                  "event.expected_responses",
+                  "event.user_id",
+                  "user.userName as requesterName",
+                ])
                 .where("id", "=", eventId)
                 .executeTakeFirst();
               const users = await db.selectFrom("user").selectAll().execute();
               logJSON(users, "Found these users");
-              if (!event || !users)
+              if (!eventWithRequester || !users)
                 throw new Error(`Couldn't find event or users`);
               // DM everyone
               await Promise.allSettled(
                 users.map(async (user) => {
                   console.log(`DMing ${user.userName}...`);
-                  await requestAvailFromUser(user.id, event);
+                  await requestAvailFromUser(user.discord_id, eventWithRequester);
                 })
               );
               const availsChannel = process.env.AVAILS_CHANNEL_ID ?? "";
@@ -281,12 +301,12 @@ export default async function(req: VercelRequest, res: VercelResponse) {
               await discordAPI({
                 endpoint: `channels/${availsChannel}/threads`,
                 method: "POST",
-                body: availChannelThread(event),
+                body: availChannelThread(eventWithRequester),
               });
               // Confirm with requester
               return res.status(200).send({
                 ...basicEphMessage(
-                  `Great, I've asked everyone about ${event.name}. I have also created a thread in the #availabilty channel so people can discuss the event`
+                  `Great, I've asked everyone about ${eventWithRequester.name}. I have also created a thread in the #availabilty channel so people can discuss the event`
                 ),
               });
             } catch (e) {
@@ -318,12 +338,16 @@ export default async function(req: VercelRequest, res: VercelResponse) {
             const eventId = Number(message.data.custom_id.split(":")[2]);
             const event = await db
               .selectFrom("event")
-              .selectAll()
+              .innerJoin('user', 'event.user_id', 'user.id')
+              .selectAll('event')
+              .select(['user.userName as requesterName', 'user.discord_id as requesterDiscordId'])
               .where("id", "=", Number(eventId))
               .executeTakeFirst();
             const responses = await db
               .selectFrom("response")
-              .selectAll()
+              .innerJoin('user', 'response.user_id', 'user.id')
+              .selectAll('response')
+              .select('user.userName as userName')
               .where("event_id", "=", eventId)
               .execute();
             if (!event || !responses) {
@@ -370,13 +394,15 @@ export default async function(req: VercelRequest, res: VercelResponse) {
               // });
               const recentResponse = await db
                 .selectFrom("response")
-                .selectAll()
+                .innerJoin('user', 'response.user_id', 'id')
+                .selectAll('response')
+                .select(['user.userName as userName'])
                 .where("event_id", "=", eventId)
                 .where("user_id", "=", userId)
                 .executeTakeFirst();
               if (!recentResponse)
                 throw Error(`Error finding most recent response`);
-              await reportBackMessage(event, recentResponse);
+                await reportBackMessage(event, responses, recentResponse);
             }
             return res.status(200).send({
               type: 4,
@@ -418,7 +444,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
           // });
           const event = await db
             .selectFrom("event")
-            .selectAll()
+            .selectAll('event')
             .where("id", "=", Number(eventId))
             .executeTakeFirst();
           if (!event) throw new Error(`Error finding event in DB`);
@@ -426,7 +452,6 @@ export default async function(req: VercelRequest, res: VercelResponse) {
             .selectFrom("response")
             .innerJoin("user", "user.id", "response.user_id")
             .select([
-              "response.user_id as userId",
               "user.userName as userName",
               "response.available",
             ])
@@ -437,7 +462,7 @@ export default async function(req: VercelRequest, res: VercelResponse) {
             type: 4,
             data: {
               flags: 64,
-              content: eventInfoMessage(event),
+              content: eventInfoMessage(event, responses),
             },
           });
         } catch (e) {
@@ -603,14 +628,6 @@ export default async function(req: VercelRequest, res: VercelResponse) {
         const requesterId = message.member.user.id as string;
         try {
           // Add event to DB
-          // const event = await prisma.event.create({
-          //   data: {
-          //     date: eventDate,
-          //     name: eventName,
-          //     userId: requesterId,
-          //     expected: TOTAL_BAND_MEMBERS,
-          //   },
-          // });
           const user = await db
             .selectFrom("user")
             .select("id")
@@ -625,7 +642,8 @@ export default async function(req: VercelRequest, res: VercelResponse) {
               user_id: user.id,
               expected_responses: TOTAL_BAND_MEMBERS,
             })
-            .execute();
+            .returningAll()
+            .executeTakeFirstOrThrow();
           // Send message to user confirming event details, and prompting them
           // to DM everyone
           return res.status(200).send({
