@@ -1,19 +1,24 @@
-CREATE TABLE events (
-    id serial PRIMARY KEY,
-    name text,
-    "date" date,
-    user_id integer NOT NULL REFERENCES users(id) ON DELETE CASCADE
+CREATE TABLE discord_users (
+    id int PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    discord_id varchar(255),
+    user_name varchar(255)
 );
 
-CREATE TABLE users (
-    id serial PRIMARY KEY,
-    discord_id text,
-    user_name text
+CREATE TABLE events (
+    id int PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    name varchar(255),
+    date date,
+    user_id int NOT NULL,
+    expected_responses int,
+    discord_user_id int,
+    KEY discord_user_id_key (discord_user_id)
 );
 
 CREATE TABLE responses (
-    id serial PRIMARY KEY,
-    event_id integer NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-    user_id integer NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    available boolean
+    id int PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    event_id int NOT NULL,
+    user_id int NOT NULL,
+    available boolean,
+    KEY event_id_key (event_id),
+    KEY user_id_key (user_id)
 );

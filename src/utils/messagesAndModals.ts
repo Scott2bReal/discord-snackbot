@@ -273,7 +273,7 @@ export const basicEphMessage = (content: string) => {
 // respond to this by creating a new response and associating it with the
 // user and event
 export async function requestAvailFromUser(
-  userId: string,
+  userId: number,
   event: Event & { requester: User }
 ) {
   const channel = await discordAPI({
