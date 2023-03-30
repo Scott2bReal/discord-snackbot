@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { Generated, Kysely } from "kysely";
+import { Generated, Kysely, Selectable } from "kysely";
 import { PlanetScaleDialect } from "kysely-planetscale";
 import type { Show } from "../types";
 import {
@@ -36,13 +36,13 @@ import { sanityAPI } from "../utils/sanity";
 const SNACKBOT_ID = "1059704679677841418";
 export const TOTAL_BAND_MEMBERS = 11;
 
-interface UserTable {
+export interface UserTable {
   id: Generated<number>;
   discord_id: string;
   userName: string;
 }
 
-interface EventTable {
+export interface EventTable {
   id: Generated<number>;
   name: string;
   date: Date;
@@ -50,14 +50,14 @@ interface EventTable {
   expected_responses: number;
 }
 
-interface ResponseTable {
+export interface ResponseTable {
   id: Generated<number>;
   user_id: number;
   event_id: number;
   available: boolean;
 }
 
-interface Database {
+export interface Database {
   user: UserTable;
   event: EventTable;
   response: ResponseTable;
@@ -68,6 +68,10 @@ const db = new Kysely<Database>({
     url: process.env.PLANETSCALE_DB_URL,
   }),
 });
+
+export type User = Selectable<UserTable>;
+export type Response = Selectable<ResponseTable>;
+export type Event = Selectable<EventTable>;
 
 export default async function(req: VercelRequest, res: VercelResponse) {
   if (req.method === "POST") {

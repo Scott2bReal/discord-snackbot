@@ -1,6 +1,6 @@
-import { Event, Response, User } from '@prisma/client'
+import type { Event, Response, User } from '../api'
 import { TOTAL_BAND_MEMBERS } from '../api'
-import { Show } from '../types'
+import type { Show } from '../types'
 import { INSTALL_ID } from './commands'
 import { discordAPI } from './discord'
 
@@ -189,7 +189,7 @@ export const eventSelectMenu = (
                 custom_id: 'selectedEvent',
                 options: events.map((event) => {
                   return {
-                    label: `${event.name} (${event.responses.length}/${event.expected} responses)`,
+                    label: `${event.name} (${event.responses.length}/${event.expected_responses} responses)`,
                     value: event.id,
                     description: event.date.toDateString(),
                   }
@@ -321,10 +321,11 @@ export async function requestAvailFromUser(
 }
 
 export async function reportBackMessage(
-  event: Event & { responses: (Response & { user: User })[]; requester: User },
+  event: Event,
+  responses: Response[],
   recentResponse: Response & { user: User }
 ) {
-  event.responses.push(recentResponse)
+  responses.push(recentResponse)
   const responseList = event.responses.map((response) => {
     return `\n${response.user.userName}: ${
       response.available ? 'Available' : 'Not available'
