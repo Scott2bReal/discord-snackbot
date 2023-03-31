@@ -1,6 +1,9 @@
 {
+  "type": "module",
   "scripts": {
+    "dev": "tsc --watch"
   },
+  "main": "src/api/index.js",
   "dependencies": {
     "@planetscale/database": "^1.6.0",
     "@vercel/node": "^2.8.1",

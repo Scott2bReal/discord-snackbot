@@ -36,13 +36,13 @@ import { sanityAPI } from "../utils/sanity.js";
 
 const SNACKBOT_ID = "1059704679677841418";
 export const TOTAL_BAND_MEMBERS = 11;
+const db = new Kysely<Database>({
+  dialect: new PlanetScaleDialect({
+    url: process.env.PLANETSCALE_DB_URL,
+  }),
+});
 
 export default async function(req: VercelRequest, res: VercelResponse) {
-  const db = new Kysely<Database>({
-    dialect: new PlanetScaleDialect({
-      url: process.env.PLANETSCALE_DB_URL,
-    }),
-  });
 
   if (req.method === "POST") {
     // Discord wants to verify requests
