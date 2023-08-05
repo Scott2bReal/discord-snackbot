@@ -4,14 +4,14 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@prisma/client": "^4.8.1",
+    "@prisma/client": "^5.1.1",
     "@vercel/node": "^2.8.1",
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@types/node": "^18.11.18",
     "prettier-plugin-organize-imports": "^3.2.2",
-    "prisma": "^4.8.1",
+    "prisma": "^5.1.1",
     "typescript": "^5.0.2"
   }
 }
