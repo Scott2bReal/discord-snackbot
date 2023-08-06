@@ -1,20 +1,21 @@
-import { Event, Response, User } from '@prisma/client'
-import { TOTAL_BAND_MEMBERS } from '../api'
-import { Show } from '../types'
-import { INSTALL_ID } from './commands'
-import { discordAPI } from './discord'
+import { Event, Response, User } from "@prisma/client"
+import { TOTAL_BAND_MEMBERS } from "../api"
+import { ContactFormData } from "../api/handleContactForm"
+import { Show } from "../types"
+import { INSTALL_ID } from "./commands"
+import { discordAPI } from "./discord"
 
 export const availModal = {
-  custom_id: 'availRequest',
-  title: 'Availability',
+  custom_id: "availRequest",
+  title: "Availability",
   components: [
     {
       type: 1,
       components: [
         {
           type: 4,
-          custom_id: 'eventName',
-          label: 'Event Name',
+          custom_id: "eventName",
+          label: "Event Name",
           style: 1,
         },
       ],
@@ -24,9 +25,9 @@ export const availModal = {
       components: [
         {
           type: 4,
-          custom_id: 'date',
-          label: 'Date (please input as YYYY-MM-DD)',
-          placeholder: '2022-12-31',
+          custom_id: "date",
+          label: "Date (please input as YYYY-MM-DD)",
+          placeholder: "2022-12-31",
           style: 1,
         },
       ],
@@ -35,16 +36,16 @@ export const availModal = {
 }
 
 export const addShowModal = {
-  custom_id: 'addShow',
-  title: 'Add Show',
+  custom_id: "addShow",
+  title: "Add Show",
   components: [
     {
       type: 1,
       components: [
         {
           type: 4,
-          custom_id: 'venueName',
-          label: 'Venue Name',
+          custom_id: "venueName",
+          label: "Venue Name",
           style: 1,
         },
       ],
@@ -54,20 +55,8 @@ export const addShowModal = {
       components: [
         {
           type: 4,
-          custom_id: 'subtitle',
-          label: 'Subtitle',
-          style: 1,
-          required: false,
-        },
-      ],
-    },
-    {
-      type: 1,
-      components: [
-        {
-          type: 4,
-          custom_id: 'date',
-          label: 'Date (please enter in format YYYY-MM-DD)',
+          custom_id: "subtitle",
+          label: "Subtitle",
           style: 1,
           required: false,
         },
@@ -78,7 +67,19 @@ export const addShowModal = {
       components: [
         {
           type: 4,
-          custom_id: 'location',
+          custom_id: "date",
+          label: "Date (please enter in format YYYY-MM-DD)",
+          style: 1,
+          required: false,
+        },
+      ],
+    },
+    {
+      type: 1,
+      components: [
+        {
+          type: 4,
+          custom_id: "location",
           label: 'Location (enter like "Chicago, IL)',
           style: 1,
         },
@@ -89,8 +90,8 @@ export const addShowModal = {
       components: [
         {
           type: 4,
-          custom_id: 'ticketLink',
-          label: 'Ticket Link',
+          custom_id: "ticketLink",
+          label: "Ticket Link",
           style: 1,
           required: false,
         },
@@ -101,24 +102,24 @@ export const addShowModal = {
 
 export const removeShowMenu = (shows: Show[]) => {
   return {
-    content: 'Pick up to 3 shows to remove',
-    custom_id: 'removeShow',
+    content: "Pick up to 3 shows to remove",
+    custom_id: "removeShow",
     components: [
       {
         type: 1,
         components: [
           {
             type: 3,
-            custom_id: 'removeShow',
+            custom_id: "removeShow",
             options: shows.map((show) => {
-              const showDate = show.date ? ` - ${show.date}` : ''
+              const showDate = show.date ? ` - ${show.date}` : ""
               return {
                 label: show.venueName,
                 value: show._id,
                 description: `${show.city}, ${show.state}${showDate}`,
               }
             }),
-            placeholder: 'Pick a show to delete',
+            placeholder: "Pick a show to delete",
             max_values: 3,
           },
         ],
@@ -129,14 +130,14 @@ export const removeShowMenu = (shows: Show[]) => {
 
 export const deleteCommandsMenu = (commands: Array<any>) => {
   return {
-    content: 'Select the commands you would like to delete',
+    content: "Select the commands you would like to delete",
     components: [
       {
         type: 1,
         components: [
           {
             type: 3,
-            custom_id: 'deleteCommandsMenu',
+            custom_id: "deleteCommandsMenu",
             options: commands
               .filter((command) => command.id !== INSTALL_ID)
               .map((command) => {
@@ -155,14 +156,14 @@ export const deleteCommandsMenu = (commands: Array<any>) => {
 }
 
 export const userSelectMenu = {
-  content: 'Select a user',
+  content: "Select a user",
   components: [
     {
       type: 1,
       components: [
         {
           type: 5,
-          custom_id: 'userSelectMenu',
+          custom_id: "userSelectMenu",
         },
       ],
     },
@@ -170,7 +171,7 @@ export const userSelectMenu = {
 }
 
 export const eventSelectMenu = (
-  events: (Event & { responses: Response[] })[]
+  events: (Event & { responses: Response[] })[],
 ) => {
   return events.length === 0
     ? {
@@ -186,7 +187,7 @@ export const eventSelectMenu = (
             components: [
               {
                 type: 3,
-                custom_id: 'selectedEvent',
+                custom_id: "selectedEvent",
                 options: events.map((event) => {
                   return {
                     label: `${event.name} (${event.responses.length}/${event.expected} responses)`,
@@ -245,17 +246,27 @@ export const availRequestSendMessage = (event: Event) => {
 }
 
 export const eventInfoMessage = (
-  event: Event & { responses: (Response & { user: User })[] }
+  event: Event & { responses: (Response & { user: User })[] },
 ) => {
   const responseList = event.responses.map((response) => {
     return `\n${response.user.userName}: ${
-      response.available ? 'Available' : 'Not available'
+      response.available ? "Available" : "Not available"
     }`
   })
 
   return `${
     event.name
   }: ${event.date.toDateString()}\nResponses:${responseList}`
+}
+
+export const sendBasicMessage = (content: string, channelId: string) => {
+  return discordAPI({
+    endpoint: `channels/${channelId}/messages`,
+    method: "POST",
+    body: {
+      content,
+    },
+  })
 }
 
 export const basicEphMessage = (content: string) => {
@@ -274,11 +285,11 @@ export const basicEphMessage = (content: string) => {
 // user and event
 export async function requestAvailFromUser(
   userId: string,
-  event: Event & { requester: User }
+  event: Event & { requester: User },
 ) {
   const channel = await discordAPI({
-    endpoint: 'users/@me/channels',
-    method: 'POST',
+    endpoint: "users/@me/channels",
+    method: "POST",
     body: {
       recipient_id: userId,
     },
@@ -286,7 +297,7 @@ export async function requestAvailFromUser(
 
   return await discordAPI({
     endpoint: `channels/${channel.id}/messages`,
-    method: 'POST',
+    method: "POST",
     body: {
       content: `BEEP BOOP ${
         event.requester.userName
@@ -320,20 +331,29 @@ export async function requestAvailFromUser(
   })
 }
 
+export const contactFormMessage = (
+  contactFormData: Omit<ContactFormData, "secret">,
+) => {
+  const { email, message, subject, firstName, lastName } = contactFormData
+  return `New contact form submission from ${firstName}${
+    lastName ? ` ${lastName}` : ""
+  } (${email})\n\nSubject: ${subject}\n\nMessage: ${message}`
+}
+
 export async function reportBackMessage(
   event: Event & { responses: (Response & { user: User })[]; requester: User },
-  recentResponse: Response & { user: User }
+  recentResponse: Response & { user: User },
 ) {
   event.responses.push(recentResponse)
   const responseList = event.responses.map((response) => {
     return `\n${response.user.userName}: ${
-      response.available ? 'Available' : 'Not available'
+      response.available ? "Available" : "Not available"
     }`
   })
 
   const channel = await discordAPI({
-    endpoint: 'users/@me/channels',
-    method: 'POST',
+    endpoint: "users/@me/channels",
+    method: "POST",
     body: {
       recipient_id: event.requester.id,
     },
@@ -341,7 +361,7 @@ export async function reportBackMessage(
 
   return await discordAPI({
     endpoint: `channels/${channel.id}/messages`,
-    method: 'POST',
+    method: "POST",
     body: {
       content: `I've heard back from everyone about:\n ${
         event.name
