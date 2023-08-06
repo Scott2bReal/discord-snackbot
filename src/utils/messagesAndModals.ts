@@ -264,7 +264,10 @@ export const sendBasicMessage = (content: string, channelId: string) => {
     endpoint: `channels/${channelId}/messages`,
     method: "POST",
     body: {
-      content,
+      type: 4,
+      data: {
+        content,
+      },
     },
   })
 }

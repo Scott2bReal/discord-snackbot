@@ -90,11 +90,13 @@ export default async function (req: VercelRequest, res: VercelResponse) {
           })
         } catch (e) {
           console.error(e)
-          return res.status(200).send({
-            ...basicEphMessage(
-              `OoOoOps, I messed up trying to find events. Try again or talk to Scott!`,
-            ),
-          })
+          return res
+            .status(200)
+            .send(
+              basicEphMessage(
+                `OoOoOps, I messed up trying to find events. Try again or talk to Scott!`,
+              ),
+            )
         }
       }
 
