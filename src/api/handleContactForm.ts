@@ -32,7 +32,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
     if (!(req.method === "POST")) {
       return res.status(405).send("Method not allowed")
     }
-    const data = req.body
+    const data = JSON.parse(req.body)
     console.log(
       `Received request for handling contact form from website: ${JSON.stringify(
         data,
