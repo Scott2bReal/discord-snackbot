@@ -16,7 +16,7 @@ export interface ContactFormData {
 const isContactFormData = (data: any): data is ContactFormData => {
   return (
     typeof data.firstName === "string" &&
-    (typeof data.lastName === "string" || "undefined") &&
+    typeof data.lastName === "string" &&
     typeof data.email === "string" &&
     typeof data.subject === "string" &&
     typeof data.message === "string" &&
