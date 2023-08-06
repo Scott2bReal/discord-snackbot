@@ -51,7 +51,9 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       contactFormMessage({ firstName, lastName, email, subject, message }),
       generalChannelId,
     )
-    console.log(`Sent message to general channel: ${result}`)
+    console.log(
+      `Sent message to general channel: ${JSON.stringify(result, null, 2)}`,
+    )
     return res.status(200).send("Notified the band")
   } catch (e) {
     console.error(e)
