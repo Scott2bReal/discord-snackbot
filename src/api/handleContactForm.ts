@@ -34,11 +34,14 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       return res.status(405).send("Method not allowed")
     }
     const data = req.body
+    console.log(`Received request for handling contact form from website`)
     if (!isContactFormData(data)) {
+      console.log(`Bot detected`)
       return res.status(400).send("Invalid data")
     }
     const { firstName, lastName, email, subject, message, secret } = data
     if (secret !== secretKey) {
+      console.log(`Unauthorized request`)
       return res.status(401).send("Unauthorized")
     }
     const result = await sendBasicMessage(
