@@ -20,8 +20,7 @@ const isContactFormData = (data: any): data is ContactFormData => {
     typeof data.email === "string" &&
     typeof data.subject === "string" &&
     typeof data.message === "string" &&
-    typeof data.secret === "string" &&
-    typeof data.botField === "undefined"
+    typeof data.secret === "string"
   )
 }
 
@@ -34,9 +33,13 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       return res.status(405).send("Method not allowed")
     }
     const data = req.body
-    console.log(`Received request for handling contact form from website`)
+    console.log(
+      `Received request for handling contact form from website: ${JSON.stringify(
+        data,
+      )}`,
+    )
     if (!isContactFormData(data)) {
-      console.log(`Bot detected`)
+      console.log(`Invalid data`)
       return res.status(400).send("Invalid data")
     }
     const { firstName, lastName, email, subject, message, secret } = data
