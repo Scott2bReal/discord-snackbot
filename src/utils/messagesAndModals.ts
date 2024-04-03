@@ -343,7 +343,7 @@ export const contactFormMessage = (
 export async function reportBackMessage(
   event: SelectEvent & {
     responses: (SelectResponse & { user: SelectUser })[]
-    requester: User
+    requester: SelectUser
   },
   recentResponse: SelectResponse & { user: SelectUser },
 ) {
