@@ -1,6 +1,10 @@
-import { PrismaClient } from "@prisma/client"
+import { createId } from "@paralleldrive/cuid2"
 import type { VercelRequest, VercelResponse } from "@vercel/node"
+import { eq } from "drizzle-orm"
+import { db } from "../drizzle/db"
+import { InsertEvent, event, response, user } from "../drizzle/schema"
 import type { Show } from "../types"
+import { getEventWithResponses } from "../utils/data-fetching"
 import {
   deleteCommand,
   discordAPI,
@@ -32,7 +36,6 @@ import {
 } from "../utils/messagesAndModals"
 import { sanityAPI } from "../utils/sanity"
 
-const prisma = new PrismaClient()
 const SNACKBOT_ID = "1059704679677841418"
 export const TOTAL_BAND_MEMBERS = 11
 
@@ -76,8 +79,8 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       // Event Info
       if (commandName === "eventinfo") {
         try {
-          const events = await prisma.event.findMany({
-            include: { responses: true },
+          const events = await db.query.event.findMany({
+            with: { responses: true },
           })
           if (!events) throw new Error(`Couldn't find events`)
           // We only want to see events that are in the future
@@ -100,7 +103,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
       // List users
       if (commandName === "listusers") {
-        const users = await prisma.user.findMany()
+        const users = await db.query.user.findMany()
         const userNames = users.map((user) => user.userName)
         return res.status(200).send({
           ...basicEphMessage(
@@ -214,23 +217,21 @@ export default async function (req: VercelRequest, res: VercelResponse) {
               if (typeof eventId !== "string") {
                 throw new Error(`Event ID needs to be a string`)
               }
-              const event = await prisma.event.findUnique({
-                where: {
-                  id: eventId,
-                },
-                include: {
+              const selectedEvent = await db.query.event.findFirst({
+                where: (event, { eq }) => eq(event.id, eventId),
+                with: {
                   requester: true,
                 },
               })
-              const users = await prisma.user.findMany()
+              const users = await db.query.user.findMany()
               logJSON(users, "Found these users")
-              if (!event || !users)
+              if (!selectedEvent || !users)
                 throw new Error(`Couldn't find event or users`)
               // DM everyone
               await Promise.allSettled(
                 users.map(async (user) => {
                   console.log(`DMing ${user.userName}...`)
-                  await requestAvailFromUser(user.id, event)
+                  await requestAvailFromUser(user.id, selectedEvent)
                 }),
               )
               const availsChannel = process.env.AVAILS_CHANNEL_ID ?? ""
@@ -238,12 +239,12 @@ export default async function (req: VercelRequest, res: VercelResponse) {
               await discordAPI({
                 endpoint: `channels/${availsChannel}/threads`,
                 method: "POST",
-                body: availChannelThread(event),
+                body: availChannelThread(selectedEvent),
               })
               // Confirm with requester
               return res.status(200).send({
                 ...basicEphMessage(
-                  `Great, I've asked everyone about ${event.name}. I have also created a thread in the #availabilty channel so people can discuss the event`,
+                  `Great, I've asked everyone about ${selectedEvent.name}. I have also created a thread in the #availabilty channel so people can discuss the event`,
                 ),
               })
             } catch (e) {
@@ -256,11 +257,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
             }
             // User wants to cancel avail request. Delete event in DB
           } else {
-            await prisma.event.delete({
-              where: {
-                id: eventId,
-              },
-            })
+            await db.delete(event).where(eq(event, eventId))
 
             return res.status(200).send({
               ...basicEphMessage(`Ok! I've deleted that event in my brain`),
@@ -274,14 +271,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
             const availability = interpretResponse(message.data.custom_id)
             const userId = message.user.id
             const eventId = message.data.custom_id.split(":")[2]
-            const event = await prisma.event.findUnique({
-              where: { id: eventId },
-              include: {
-                responses: { include: { user: true } },
-                requester: true,
-              },
-            })
-
+            const event = await getEventWithResponses(eventId)
             if (!userId || !eventId || !event) {
               throw new Error(
                 `Couldn't determine event or user ID when recording user's availability response`,
@@ -293,24 +283,26 @@ export default async function (req: VercelRequest, res: VercelResponse) {
               ? `Great, you're available! Beep boop. I'll let ${requester.userName} know`
               : `Too bad! That's why I exist though. I'll let ${requester.userName} know`
             // Record their response
-            await prisma.response.create({
-              data: {
+            const newResponse = await db
+              .insert(response)
+              .values({
                 available: availability,
                 eventId: eventId,
                 userId: userId,
-              },
-            })
+                id: createId(),
+              })
+              .returning()
+            if (!newResponse) throw new Error(`Error recording response`)
             // If we've heard back from everyone we're expecting to hear back
             // from, report back to even requester
             if (responses.length === expected - 1) {
-              const recentResponse = await prisma.response.findUnique({
-                where: {
-                  eventId_userId: {
-                    eventId: eventId,
-                    userId: userId,
-                  },
-                },
-                include: {
+              const recentResponse = await db.query.response.findFirst({
+                where: (response, { and, eq }) =>
+                  and(
+                    eq(response.eventId, eventId),
+                    eq(response.userId, userId),
+                  ),
+                with: {
                   user: true,
                 },
               })
@@ -344,18 +336,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         try {
           const eventId = message.data.values[0]
           if (typeof eventId !== "string") throw new Error(`Improper event ID`)
-          const event = await prisma.event.findUnique({
-            where: {
-              id: eventId,
-            },
-            include: {
-              responses: {
-                include: {
-                  user: true,
-                },
-              },
-            },
-          })
+          const event = await getEventWithResponses(eventId)
           if (!event) throw new Error(`Error finding event in DB`)
           console.log(`Found event! Sending message...`)
           return res.status(200).send({
@@ -388,12 +369,14 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         const userName = message.data.resolved.users[userId].username
         try {
           console.log(`Adding user to db...`)
-          await prisma.user.create({
-            data: {
-              id: userId,
+          const newUserIds = await db
+            .insert(user)
+            .values({
+              id: createId(),
               userName: userName,
-            },
-          })
+            })
+            .returning({ insertedId: user.id })
+          if (newUserIds.length === 0) throw new Error(`Error adding user`)
           return res.status(200).send({
             ...basicEphMessage(
               `Added user ${userName} to my data banks. Beep boop!`,
@@ -420,11 +403,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         const userName = message.data.resolved.users[userId].username
         try {
           console.log(`Removing user from db...`)
-          await prisma.user.delete({
-            where: {
-              id: userId,
-            },
-          })
+          await db.delete(user).where(eq(user.id, userId))
           return res.status(200).send({
             ...basicEphMessage(
               `Removed user ${userName} from my data banks. Beep boop!`,
@@ -524,20 +503,24 @@ export default async function (req: VercelRequest, res: VercelResponse) {
         const requesterId = message.member.user.id as string
         try {
           // Add event to DB
-          const event = await prisma.event.create({
-            data: {
-              date: eventDate,
+          const newEventResult: InsertEvent[] = await db
+            .insert(event)
+            .values({
+              date: eventDate.toISOString(),
               name: eventName,
               userId: requesterId,
               expected: TOTAL_BAND_MEMBERS,
-            },
-          })
+              id: createId(),
+            })
+            .returning()
+          if (newEventResult.length === 0) throw new Error(`Error adding event`)
+          const newEvent = newEventResult[0]
           // Send message to user confirming event details, and prompting them
           // to DM everyone
           return res.status(200).send({
             type: 4,
             data: {
-              ...availRequestSendMessage(event),
+              ...availRequestSendMessage(newEvent),
             },
           })
         } catch (e) {

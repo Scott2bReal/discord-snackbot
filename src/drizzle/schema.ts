@@ -48,6 +48,7 @@ export const event = pgTable("Event", {
 })
 
 export type SelectEvent = typeof event.$inferSelect
+export type InsertEvent = typeof event.$inferInsert
 
 export const eventRelations = relations(event, ({ one, many }) => ({
   requester: one(user, {
@@ -80,6 +81,7 @@ export const response = pgTable(
 )
 
 export type SelectResponse = typeof response.$inferSelect
+export type InsertResponse = typeof response.$inferInsert
 
 export const responseRelations = relations(response, ({ one }) => ({
   user: one(user, {

@@ -1,34 +1,30 @@
-import { PrismaClient } from '@prisma/client'
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { isUpcoming } from '../utils/helpers'
 import { requestAvailFromUser } from '../utils/messagesAndModals'
+import { db } from '../drizzle/db'
 
-const prisma = new PrismaClient()
 const SNACKBOT_ID = '1059704679677841418'
+
 export default async function (req: VercelRequest, res: VercelResponse) {
   try {
     // Find all users
-    const users = await prisma.user.findMany({
-      include: {
-        responses: true,
-      },
-    })
+    const users = await db.query.user.findMany()
     // We don't want the SNACKBOT included
     const allUserIds = users
       .filter((user) => user.id !== SNACKBOT_ID)
       .map((user) => user.id)
 
     // Find all events
-    const events = await prisma.event.findMany({
-      include: {
+    const events = await db.query.event.findMany({
+      with: {
         requester: true,
         responses: {
-          include: {
-            user: true,
-          },
-        },
-      },
-    })
+          with: {
+            user: true
+          }
+        }
+      }
+      })
 
     // Filter for upcoming
     const upcomingEvents = events.filter(isUpcoming)

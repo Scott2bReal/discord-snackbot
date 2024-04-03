@@ -1,4 +1,3 @@
-import { Event } from "@prisma/client"
 import { User } from "../types"
 
 export function logJSON(json: object, message?: string) {
@@ -46,11 +45,12 @@ export function interpretResponse(responseCustomId: string) {
 }
 
 export function isUpcoming(
-  event: Event | (Event & { responses: (Response & { user: User })[] })
+  event: { date: string }
 ) {
+  const eventDate = new Date(event.date)
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
   // Set the time zone offset for Chicago
   yesterday.setTime(yesterday.getTime() + 3600 * 1000 * -6)
-  return event.date > yesterday
+  return eventDate > yesterday
 }
