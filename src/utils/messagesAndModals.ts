@@ -1,6 +1,6 @@
-import { Event, Response, User } from "@prisma/client"
 import { TOTAL_BAND_MEMBERS } from "../api"
 import { ContactFormData } from "../api/handleContactForm"
+import { InsertEvent, SelectEvent, SelectResponse, SelectUser } from "../drizzle/schema"
 import { Show } from "../types"
 import { INSTALL_ID } from "./commands"
 import { discordAPI } from "./discord"
@@ -171,7 +171,7 @@ export const userSelectMenu = {
 }
 
 export const eventSelectMenu = (
-  events: (Event & { responses: Response[] })[],
+  events: (SelectEvent & { responses: SelectResponse[] })[],
 ) => {
   return events.length === 0
     ? {
@@ -192,7 +192,7 @@ export const eventSelectMenu = (
                   return {
                     label: `${event.name} (${event.responses.length}/${event.expected} responses)`,
                     value: event.id,
-                    description: event.date.toDateString(),
+                    description: new Date(event.date).toDateString(),
                   }
                 }),
               },
@@ -202,15 +202,15 @@ export const eventSelectMenu = (
       }
 }
 
-export const availChannelThread = (event: Event) => {
+export const availChannelThread = (event: SelectEvent) => {
   return {
-    name: `${event.name} - ${event.date.toDateString()}`,
+    name: `${event.name} - ${new Date(event.date).toDateString()}`,
     type: 11 /* 11 is the type for public threads */,
     content: `Please use this thread to discuss this event. You can use the buttons in my DM for this event to submit your availabilty.`,
   }
 }
 
-export const availRequestSendMessage = (event: Event) => {
+export const availRequestSendMessage = (event: InsertEvent) => {
   // This function takes the event as an argument so we can embed the event ID
   // in the custom_id property of the component that gets passed along through
   // HTTP. We'll use the portion of the custom_id before the : to identify the
@@ -218,7 +218,7 @@ export const availRequestSendMessage = (event: Event) => {
   return {
     content: `Beep boop! I've saved that event in my brain. Just to confirm, the event deets are:\n\nEvent name: ${
       event.name
-    }\nEvent date: ${event.date.toDateString()}\n\nIf that looks good, click this button and I'll hit everyone up for their availability! I'm expecting ${TOTAL_BAND_MEMBERS} responses, and I'll let you know when I've heard back from everyone.`,
+    }\nEvent date: ${new Date(event.date).toDateString()}\n\nIf that looks good, click this button and I'll hit everyone up for their availability! I'm expecting ${TOTAL_BAND_MEMBERS} responses, and I'll let you know when I've heard back from everyone.`,
     flags: 64,
     components: [
       {
@@ -246,7 +246,7 @@ export const availRequestSendMessage = (event: Event) => {
 }
 
 export const eventInfoMessage = (
-  event: Event & { responses: (Response & { user: User })[] },
+  event: SelectEvent & { responses: (SelectResponse & { user: SelectUser })[] },
 ) => {
   const responseList = event.responses.map((response) => {
     return `\n${response.user.userName}: ${
@@ -254,9 +254,9 @@ export const eventInfoMessage = (
     }`
   })
 
-  return `${
-    event.name
-  }: ${event.date.toDateString()}\nResponses:${responseList}`
+  return `${event.name}: ${new Date(
+    event.date,
+  ).toDateString()}\nResponses:${responseList}`
 }
 
 export const sendBasicMessage = (content: string, channelId: string) => {
@@ -285,7 +285,7 @@ export const basicEphMessage = (content: string) => {
 // user and event
 export async function requestAvailFromUser(
   userId: string,
-  event: Event & { requester: User },
+  event: SelectEvent & { requester: SelectUser },
 ) {
   const channel = await discordAPI({
     endpoint: "users/@me/channels",
@@ -301,9 +301,9 @@ export async function requestAvailFromUser(
     body: {
       content: `BEEP BOOP ${
         event.requester.userName
-      } wants to know if you're available for ${
-        event.name
-      } on ${event.date.toDateString()}?`,
+      } wants to know if you're available for ${event.name} on ${new Date(
+        event.date,
+      ).toDateString()}?`,
       components: [
         {
           type: 1,
@@ -341,8 +341,11 @@ export const contactFormMessage = (
 }
 
 export async function reportBackMessage(
-  event: Event & { responses: (Response & { user: User })[]; requester: User },
-  recentResponse: Response & { user: User },
+  event: SelectEvent & {
+    responses: (SelectResponse & { user: SelectUser })[]
+    requester: SelectUser
+  },
+  recentResponse: SelectResponse & { user: SelectUser },
 ) {
   event.responses.push(recentResponse)
   const responseList = event.responses.map((response) => {
@@ -365,7 +368,9 @@ export async function reportBackMessage(
     body: {
       content: `I've heard back from everyone about:\n ${
         event.name
-      }\n${event.date.toDateString()}\nHere's the breakdown:${responseList}`,
+      }\n${new Date(
+        event.date,
+      ).toDateString()}\nHere's the breakdown:${responseList}`,
     },
   })
 }
