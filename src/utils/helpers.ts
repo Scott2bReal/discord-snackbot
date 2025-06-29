@@ -1,5 +1,5 @@
-import { Event } from "@prisma/client"
-import { User } from "../types"
+import type { Event } from "@prisma/client"
+import type { User } from "../types"
 
 export function logJSON(json: object, message?: string) {
 	if (message !== undefined) {

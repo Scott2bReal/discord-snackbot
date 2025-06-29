@@ -1,10 +1,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node"
+import type { Setlist } from "../types"
 import { discordAPI } from "../utils/discord"
 import {
 	setlistChannelThread,
 	setlistChannelThreadMessage,
 } from "../utils/messagesAndModals"
-import { Setlist } from "../types"
 
 const secretKey = process.env.SETLIST_BUILDER_SECRET
 const setlistChannel = process.env.SETLIST_CHANNEL_ID

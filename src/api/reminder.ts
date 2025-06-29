@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client"
-import { VercelRequest, VercelResponse } from "@vercel/node"
+import type { VercelRequest, VercelResponse } from "@vercel/node"
 import { isUpcoming } from "../utils/helpers"
 import { requestAvailFromUser } from "../utils/messagesAndModals"
 

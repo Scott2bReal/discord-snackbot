@@ -1,7 +1,7 @@
-import { Event, Response, User } from "@prisma/client"
+import type { Event, Response, User } from "@prisma/client"
 import { TOTAL_BAND_MEMBERS } from "../api"
-import { ContactFormData } from "../api/handleContactForm"
-import { Setlist, Show } from "../types"
+import type { ContactFormData } from "../api/handleContactForm"
+import type { Setlist, Show } from "../types"
 import { INSTALL_ID } from "./commands"
 import { discordAPI } from "./discord"
 
