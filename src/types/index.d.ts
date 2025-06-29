@@ -65,3 +65,39 @@ export type DiscordMessage = {
 	components: any[]
 	referenced_message: DiscordMessage | null
 }
+
+export interface Setlist {
+	id: string
+	createdAt: string
+	updatedAt: string
+	venueId: string
+	dateOfShow: string
+	authorId: string
+	goalDuration: number
+	bandId: string
+	venue: {
+		id: string
+		name: string
+	}
+	songs: Array<{
+		id: string
+		title: string
+		keyId: string
+		length: number
+		bandId: string
+		solos: Array<{
+			id: string
+			name: string
+			email?: string | null
+			emailVerified?: boolean | null
+			image?: string | null
+		}>
+		key: {
+			name: string
+			id: string
+		}
+		notes: Array<{
+			content: string
+		}>
+	}>
+}

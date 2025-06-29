@@ -1,7 +1,7 @@
 import { Event, Response, User } from "@prisma/client"
 import { TOTAL_BAND_MEMBERS } from "../api"
 import { ContactFormData } from "../api/handleContactForm"
-import { Show } from "../types"
+import { Setlist, Show } from "../types"
 import { INSTALL_ID } from "./commands"
 import { discordAPI } from "./discord"
 
@@ -210,6 +210,28 @@ export const availChannelThread = (event: Event) => {
 	}
 }
 
+export const setlistChannelThread = (setlist: Setlist) => {
+	return {
+		name: `${setlist.venue.name} - ${new Date(setlist.dateOfShow).toDateString()}`,
+		type: 11 /* 11 is the type for public threads */,
+	}
+}
+
+export const setlistChannelThreadMessage = (setlist: Setlist, link: string) => {
+	const { songs } = setlist
+	const songList: string = songs
+		.map((song, idx) => {
+			return `${String(idx + 1)}: ${song.title}`
+		})
+		.join("\n")
+
+	console.log("setlistChannelThreadMessage songList", songList)
+
+	return {
+		content: `${songList}\n\nView the setlist here ${link}`,
+	}
+}
+
 export const availRequestSendMessage = (event: Event) => {
 	// This function takes the event as an argument so we can embed the event ID
 	// in the custom_id property of the component that gets passed along through
@@ -218,14 +240,14 @@ export const availRequestSendMessage = (event: Event) => {
 	return {
 		content: `Beep boop! I've saved that event in my brain. Just to confirm, the event deets are:\n\nEvent name: ${
 			event.name
-		}\nEvent date: ${event.date.toDateString()}\n\nIf that looks good, click this button and I'll hit everyone up for their availability! I'm expecting ${TOTAL_BAND_MEMBERS} responses, and I'll let you know when I've heard back from everyone.`,
+		}\nEvent date: ${event.date.toDateString()} \n\nIf that looks good, click this button and I'll hit everyone up for their availability! I'm expecting ${TOTAL_BAND_MEMBERS} responses, and I'll let you know when I've heard back from everyone.`,
 		flags: 64,
 		components: [
 			{
 				type: 1,
 				components: [
 					{
-						custom_id: `availConfirmSend:yes:${event.id}`,
+						custom_id: `availConfirmSend: yes:${event.id} `,
 						// Button
 						type: 2,
 						// Green button style
@@ -233,7 +255,7 @@ export const availRequestSendMessage = (event: Event) => {
 						label: `Confirm`,
 					},
 					{
-						custom_id: `availConfirmSend:no:${event.id}`,
+						custom_id: `availConfirmSend: no:${event.id} `,
 						type: 2,
 						// Red button style
 						style: 4,
@@ -251,17 +273,17 @@ export const eventInfoMessage = (
 	const responseList = event.responses.map((response) => {
 		return `\n${response.user.userName}: ${
 			response.available ? "Available" : "Not available"
-		}`
+		} `
 	})
 
 	return `${
 		event.name
-	}: ${event.date.toDateString()}\nResponses:${responseList}`
+	}: ${event.date.toDateString()} \nResponses:${responseList} `
 }
 
 export const sendBasicMessage = (content: string, channelId: string) => {
 	return discordAPI({
-		endpoint: `channels/${channelId}/messages`,
+		endpoint: `channels / ${channelId} /messages`,
 		method: "POST",
 		body: {
 			content,
