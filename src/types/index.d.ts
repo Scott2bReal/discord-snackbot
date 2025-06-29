@@ -68,6 +68,8 @@ export type DiscordMessage = {
 
 export interface Setlist {
 	id: string
+	discordMessageId?: string
+	discordThreadId?: string
 	createdAt: string
 	updatedAt: string
 	venueId: string
