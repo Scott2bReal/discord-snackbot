@@ -11,6 +11,7 @@
 		"vercel": "^44.2.7"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "2.0.6",
 		"@types/node": "^18.11.18",
 		"prettier-plugin-organize-imports": "^3.2.2",
 		"prisma": "^5.1.1",
