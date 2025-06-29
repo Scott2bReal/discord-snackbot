@@ -10,6 +10,11 @@
     "noImplicitAny": true,
     "noImplicitThis": true
   },
-  "include": ["src"],
-  "exclude": ["src/__tests__", "node_modules"]
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "src/__tests__",
+    "node_modules"
+  ]
 }
