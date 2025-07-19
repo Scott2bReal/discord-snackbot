@@ -227,19 +227,28 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 							if (!event || !users)
 								throw new Error(`Couldn't find event or users`)
 							// DM everyone
-							await Promise.allSettled(
+							console.log("Messaging users about event: ", event.name)
+							const userMessageResults = await Promise.allSettled(
 								users.map(async (user) => {
 									console.log(`DMing ${user.userName}...`)
 									await requestAvailFromUser(user.id, event)
 								}),
 							)
+							console.log(
+								`User message results: `,
+								JSON.stringify(userMessageResults, null, 2),
+							)
 							const availsChannel = process.env.AVAILS_CHANNEL_ID ?? ""
 							// Create thread in avails channel
-							await discordAPI({
+							const threadCreationResult = await discordAPI({
 								endpoint: `channels/${availsChannel}/threads`,
 								method: "POST",
 								body: availChannelThread(event),
 							})
+							console.log(
+								`Created thread in availability channel: `,
+								threadCreationResult,
+							)
 							// Confirm with requester
 							return res.status(200).send({
 								...basicEphMessage(

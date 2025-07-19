@@ -47,6 +47,8 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 				body: setlistChannelThread(setlist),
 			})
 
+			console.log("Thread creation result:", threadResult)
+
 			if (!threadResult.id) {
 				throw new Error("Failed to create thread - no ID returned")
 			}
