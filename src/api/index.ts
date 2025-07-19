@@ -204,12 +204,16 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 				// or will delete event
 				if (message.data.custom_id?.split(":")[0] === "availConfirmSend") {
 					// Destructure custom ID into usable components
-					const [_, responseValue, eventId] = message.data.custom_id.split(
-						":",
-					) as string[]
+					const [_, responseValueRaw, eventIdRaw] =
+						message.data.custom_id.split(":") as string[]
+
+					const responseValue = responseValueRaw.trim() // Remove whitespace
+					const eventId = eventIdRaw.trim() // Remove whitespace
+
+					// Remove whitespace from responseValue and eventId
 
 					// Requester confirms event data, wants to DM everyone
-					if (responseValue === "yes") {
+					if (responseValue === "yes" || responseValue === " yes") {
 						try {
 							if (typeof eventId !== "string") {
 								throw new Error(`Event ID needs to be a string`)
